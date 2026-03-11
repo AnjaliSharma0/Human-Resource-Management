@@ -1,98 +1,288 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+Admin registers
+     ↓
+Admin creates employee
+     ↓
+Employee receives activation email
+     ↓
+Employee sets password
+     ↓
+Employee logs in
+     ↓
+Employee edits own profile
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 
-## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+# Human-Resource-Management
+nestjs-hrms/
+├─ src/
+│  ├─ auth/
+│  │  ├─ auth.controller.ts
+│  │  ├─ auth.service.ts
+│  │  ├─ jwt.strategy.ts
+│  │  ├─ auth.module.ts
+│  │  ├─ dto/
+│  │     ├─ login.dto.ts
+│  │     └─ register.dto.ts
+│  ├─ employees/
+│  │  ├─ employee.entity.ts
+│  │  ├─ employee.service.ts
+│  │  ├─ employee.controller.ts
+│  │  ├─ dto/
+│  │     ├─ create-employee.dto.ts
+│  │     └─ update-employee.dto.ts
+│  ├─ documents/
+│  │  ├─ employee-document.entity.ts
+│  │  ├─ employee-document.service.ts
+│  │  ├─ employee-document.controller.ts
+│  ├─ emergency-contacts/
+│  │  ├─ emergency-contact.entity.ts
+│  │  ├─ emergency-contact.service.ts
+│  │  ├─ emergency-contact.controller.ts
+│  ├─ attendance/
+│  │  ├─ attendance.entity.ts
+│  │  ├─ attendance.service.ts
+│  │  ├─ attendance.controller.ts
+│  ├─ leave/
+│  │  ├─ leave.entity.ts
+│  │  ├─ leave.service.ts
+│  │  ├─ leave.controller.ts
+│  ├─ payroll/
+│  │  ├─ payroll.entity.ts
+│  │  ├─ payroll.service.ts
+│  │  ├─ payroll.controller.ts
+│  ├─ performance/
+│  │  ├─ goal.entity.ts
+│  │  ├─ review.entity.ts
+│  │  ├─ performance.service.ts
+│  │  ├─ performance.controller.ts
+│  ├─ recruitment/
+│  │  ├─ job.entity.ts
+│  │  ├─ candidate.entity.ts
+│  │  ├─ recruitment.service.ts
+│  │  ├─ recruitment.controller.ts
+│  ├─ training/
+│  │  ├─ course.entity.ts
+│  │  ├─ enrollment.entity.ts
+│  │  ├─ training.service.ts
+│  │  ├─ training.controller.ts
+│  ├─ expenses/
+│  │  ├─ expense.entity.ts
+│  │  ├─ expenses.service.ts
+│  │  ├─ expenses.controller.ts
+│  ├─ onboarding/
+│  │  ├─ onboarding.entity.ts
+│  │  ├─ onboarding.service.ts
+│  │  ├─ onboarding.controller.ts
+│  ├─ org-structure/
+│  │  ├─ department.entity.ts
+│  │  ├─ org.service.ts
+│  │  ├─ org.controller.ts
+│  ├─ reports/
+│  │  ├─ reports.service.ts
+│  │  ├─ reports.controller.ts
+│  ├─ security/
+│  │  ├─ roles.guard.ts
+│  │  ├─ roles.decorator.ts
+│  ├─ integrations/
+│  │  ├─ integration.service.ts
+│  │  ├─ integration.controller.ts
+│  ├─ common/
+│  │  ├─ utils.ts
+│  ├─ app.module.ts
+│  └─ main.ts
+├─ package.json
+├─ tsconfig.json
+├─ .env
 
-## Project setup
 
-```bash
-$ npm install
-```
 
-## Compile and run the project
 
-```bash
-# development
-$ npm run start
+// Full NestJS HRMS Backend - 
 
-# watch mode
-$ npm run start:dev
+// =============================================
+// 1️⃣ Auth Module
+// POST /auth/register - Register user
+// POST /auth/login - Login, returns JWT
+// GET /auth/profile - Get current user profile
 
-# production mode
-$ npm run start:prod
-```
+// 2️⃣ Employee Module
+// POST /employees - Create employee (Admin)
+// GET /employees - Get all employees (Admin/Manager)
+// GET /employees/:id - Get employee by ID
+// PUT /employees/:id - Update employee
+// DELETE /employees/:id - Delete employee
 
-## Run tests
+// 3️⃣ Documents Module
+// POST /documents - Add document to employee
+// GET /documents - List all documents
+// DELETE /documents/:id - Delete document
 
-```bash
-# unit tests
-$ npm run test
+// 4️⃣ Emergency Contacts Module
+// POST /emergency-contacts - Add contact
+// GET /emergency-contacts - List contacts
+// DELETE /emergency-contacts/:id - Delete contact
 
-# e2e tests
-$ npm run test:e2e
+// 5️⃣ Attendance Module
+// POST /attendance/punch-in - Clock in (Employee)
+// POST /attendance/punch-out - Clock out (Employee)
+// GET /attendance - List attendance records (Admin/Manager)
 
-# test coverage
-$ npm run test:cov
-```
+// 6️⃣ Leave Module
+// POST /leave - Apply leave (Employee)
+// GET /leave - List leave requests (Admin/Manager)
+// PUT /leave/:id - Approve/Reject leave (Manager)
 
-## Deployment
+// 7️⃣ Payroll Module
+// POST /payroll - Generate payroll (Admin)
+// GET /payroll - List all payrolls
+// GET /payroll/:id - Get employee payroll
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+// 8️⃣ Performance Module
+// POST /performance/goals - Create goal (Manager)
+// GET /performance/goals - List goals
+// POST /performance/reviews - Submit review
+// GET /performance/reviews - List reviews
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+// 9️⃣ Recruitment Module
+// POST /recruitment/jobs - Create job (Admin/Manager)
+// GET /recruitment/jobs - List jobs
+// POST /recruitment/candidates - Apply candidate
+// GET /recruitment/candidates - List candidates
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+// 10️⃣ Training Module
+// POST /training/courses - Create course (Admin)
+// GET /training/courses - List courses
+// POST /training/enroll - Enroll employee
+// GET /training/enrollments - List enrollments
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+// 11️⃣ Expenses Module
+// POST /expenses - Submit expense claim (Employee)
+// GET /expenses - List all expenses (Manager/Admin)
+// PUT /expenses/:id - Approve/Reject expense
 
-## Resources
+// 12️⃣ Onboarding Module
+// POST /onboarding/tasks - Add task
+// GET /onboarding/tasks - List tasks
+// PUT /onboarding/tasks/:id - Mark task complete
 
-Check out a few resources that may come in handy when working with NestJS:
+// 13️⃣ Org Structure Module
+// POST /org/departments - Create department
+// GET /org/departments - List departments
+// PUT /org/departments/:id - Update department
+// DELETE /org/departments/:id - Delete department
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+// 14️⃣ Reports Module
+// GET /reports/attendance - Attendance summary
+// GET /reports/leave - Leave summary
+// GET /reports/payroll - Payroll summary
+// GET /reports/performance - Performance summary
 
-## Support
+// 15️⃣ Integrations Module
+// POST /integrations/slack - Send notification
+// POST /integrations/quickbooks - Push payroll
+// POST /integrations/epfo - Sync employee details
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+// =============================================
 
-## Stay in touch
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+// Full NestJS HRMS Backend - Complete Module Code with Entities, DTOs, Services, Controllers
 
-## License
+// =============================================
+// 1️⃣ Auth Module
+// auth.entity.ts, auth.service.ts, auth.controller.ts, DTOs (login, register)
+// JWT authentication and role-based guard included
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+// 2️⃣ Employee Module
+// employee.entity.ts
+// employee.service.ts
+// employee.controller.ts
+// DTOs: create-employee.dto.ts, update-employee.dto.ts
+// Relations: documents, emergencyContacts, attendance, leave, payroll
+
+// 3️⃣ Documents Module
+// employee-document.entity.ts
+// employee-document.service.ts
+// employee-document.controller.ts
+// DTO: create-document.dto.ts
+
+// 4️⃣ Emergency Contacts Module
+// emergency-contact.entity.ts
+// emergency-contact.service.ts
+// emergency-contact.controller.ts
+// DTO: create-emergency-contact.dto.ts
+
+// 5️⃣ Attendance Module
+// attendance.entity.ts
+// attendance.service.ts
+// attendance.controller.ts
+// Endpoints: punch-in, punch-out, get all attendance records
+
+// 6️⃣ Leave Module
+// leave.entity.ts
+// leave.service.ts
+// leave.controller.ts
+// DTO: apply-leave.dto.ts
+// Endpoints: apply, approve, reject, get leave requests
+
+// 7️⃣ Payroll Module
+// payroll.entity.ts
+// payroll.service.ts
+// payroll.controller.ts
+// Endpoints: generate payroll, get payrolls, get employee payroll
+
+// 8️⃣ Performance Module
+// goal.entity.ts, review.entity.ts
+// performance.service.ts
+// performance.controller.ts
+// DTOs: create-goal.dto.ts, submit-review.dto.ts
+
+// 9️⃣ Recruitment Module
+// job.entity.ts, candidate.entity.ts
+// recruitment.service.ts
+// recruitment.controller.ts
+// DTOs: create-job.dto.ts, apply-candidate.dto.ts
+
+// 10️⃣ Training Module
+// course.entity.ts, enrollment.entity.ts
+// training.service.ts
+// training.controller.ts
+// DTOs: create-course.dto.ts, enroll-employee.dto.ts
+
+// 11️⃣ Expenses Module
+// expense.entity.ts
+// expenses.service.ts
+// expenses.controller.ts
+// DTO: create-expense.dto.ts
+
+// 12️⃣ Onboarding Module
+// onboarding-task.entity.ts
+// onboarding.service.ts
+// onboarding.controller.ts
+// DTO: create-task.dto.ts
+
+// 13️⃣ Org Structure Module
+// department.entity.ts
+// org.service.ts
+// org.controller.ts
+// DTO: create-department.dto.ts
+
+// 14️⃣ Reports Module
+// reports.service.ts
+// reports.controller.ts
+// Endpoints: attendance summary, leave summary, payroll summary, performance summary
+
+// 15️⃣ Integrations Module
+// integration.service.ts
+// integration.controller.ts
+// Endpoints: slack notification, QuickBooks payroll push, EPFO sync
+
+// =============================================
+// All modules are fully coded with:
+// - Entities with relations
+// - DTOs with validation
+// - Services with business logic
+// - Controllers with CRUD APIs
+// - JWT authentication and role-based guards
+// - Ready for Next.js frontend integration
+.

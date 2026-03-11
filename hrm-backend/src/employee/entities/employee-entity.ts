@@ -4,7 +4,8 @@ import {
   Column,
   OneToMany,
   ManyToOne,
-  JoinColumn
+  JoinColumn,
+  OneToOne
 } from "typeorm";
 import { EmergencyContact } from "./employement-contact.entity";
 import { EmployeeDocument } from "./document-entity";
@@ -13,6 +14,14 @@ import { User } from "src/dto/users/user-entity.dto";
 import { Designation } from "./desigation-entity";
 import { Department } from "./department-entity";
 import { EmployeeHistory } from "./employement-history.entity";
+import { Attendance } from "../../attendance/attendance.entity";
+import { Leave } from "src/leave/leave.entity";
+import { Payroll } from "src/payroll/payroll.entity";
+import { Goal } from "src/performance/goal.entity";
+import { Review } from "src/performance/review.entity";
+import { Enrollment } from "src/training/enrollment.entity";
+import { Expense } from "src/expenses/expenses.entity";
+import { OnboardingTask } from "src/onbording/onboarding.entity";
 
 @Entity()
 export class Employee {
@@ -29,6 +38,10 @@ export class Employee {
   @Column({ unique: true })
   email: string;
 
+
+  // @Column({ nullable: true })
+  // password: string;
+
   @Column()
   phone: string;
 
@@ -44,21 +57,29 @@ export class Employee {
   @Column()
   joiningDate: Date;
 
-  @Column({ default: "active" })
+  @Column({ default: "Pending" })
   status: string;
 
+ @Column({ type: "varchar", nullable: true })
+activationToken: string | null;
+
+@Column({ type: "timestamp", nullable: true })
+activationExpires: Date | null;
+
   @ManyToOne(() => Department)
-  department: Department;
+  department: Department ;
 
   @ManyToOne(() => Designation)
   designation: Designation;
 
-   @ManyToOne(() => Employee, emp => emp.subordinates, { nullable: true })
+
+  @ManyToOne(() => Employee, emp => emp.subordinates, { nullable: true })
   @JoinColumn({ name: "managerId" })
   manager: Employee;
 
-  @ManyToOne(() => User)
-  user: User;
+  @OneToOne(()=> User)
+  @JoinColumn()
+  user:User
 
   @OneToMany(() => EmergencyContact, contact => contact.employee)
   emergencyContacts: EmergencyContact[];
@@ -70,6 +91,29 @@ export class Employee {
   history: EmployeeHistory[];
 
   @OneToMany(() => Employee, emp => emp.manager)
-subordinates: Employee[];
+  subordinates: Employee[];
 
+  @OneToMany(() => Attendance, attendance => attendance.employee)
+  attendance: Attendance[];
+
+  @OneToMany(() => Leave, leave => leave.employee)
+  leaves: Leave[];
+
+  @OneToMany(() => Payroll, payroll => payroll.employee)
+  payrolls: Payroll[];
+
+  @OneToMany(() => Goal, goal => goal.employee)
+  goals: Goal[];
+
+  @OneToMany(() => Review, review => review.employee)
+  reviews: Review[];
+
+  @OneToMany(() => Enrollment, enrollment => enrollment.employee)
+  enrollments: Enrollment[];
+
+  @OneToMany(() => Expense, expense => expense.employee)
+  expenses: Expense[];
+
+  @OneToMany(() => OnboardingTask, task => task.employee)
+  tasks: OnboardingTask[];
 }

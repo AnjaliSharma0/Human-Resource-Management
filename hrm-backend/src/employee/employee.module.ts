@@ -10,9 +10,20 @@ import { EmergencyContact } from "./entities/employement-contact.entity";
 import { EmployeeHistory } from "./entities/employement-history.entity";
 import { Department } from "./entities/department-entity";
 import { Designation } from "./entities/desigation-entity";
+import { UserModule } from "src/dto/users/user.module";
+
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Employee, EmployeeDocument, Department, Designation, EmployeeHistory , EmergencyContact])],
+  imports: [TypeOrmModule.forFeature
+    ([Employee, 
+      EmployeeDocument,
+       Department, 
+       Designation,
+        EmployeeHistory ,
+         EmergencyContact]),
+       UserModule
+      ]
+    ,
   controllers: [EmployeeController],
   providers: [EmployeeService],
 })

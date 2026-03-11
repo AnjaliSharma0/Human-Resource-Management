@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from "@nestjs/common";
 import { JwtAuthGuard } from "src/dto/auth/jwt-auth.guard";
 import { EmployeeService } from "./employee.service";
 import { CreateEmployeeDto } from "./dto/create.employee.dto";
@@ -19,11 +19,19 @@ create(@Body() body:CreateEmployeeDto){
 }
 
 @Get()
-@Roles("admin","manager")
+@Roles("admin","manager","employee")
 findAll(){
   return this.employeeService.findAll();
 }
 
+@Patch("me")
+@Roles("employee")
+updateSelf(
+ @Req() req,
+ @Body() body:any
+){
+ return this.employeeService.updateSelf(req.user.id, body)
+}
 
 @Get(":id/team")
 async getTeam(@Param("id") id: number): Promise<EmployeeTeamDto> {

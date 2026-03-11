@@ -10,6 +10,17 @@ import { DesignationModule } from './employee/designation/designation.module';
 import { EmergencyContactModule } from './employee/emergency-contact/emergency-contact.module';
 import { EmployeeDocumentModule } from './employee/employee-document/employee-document.module';
 import { EmployeeHistoryModule } from './employee/employee-history/history.module';
+import { AttendanceModule } from './attendance/attendance.module';
+import { LeaveModule } from './leave/leave-module';
+import { ExpenseModule } from './expenses/expenses.module';
+import { IntegrationModule } from './integrations/integration-module';
+import { OnbordingModule } from './onbording/onbording.mdule';
+import { OrgModule } from './org-structure/org-module';
+import { PayrollModule } from './payroll/payroll-module';
+import { PerformanceModule } from './performance/performance-module';
+import { RecruitmentModule } from './recruitment/recruitment-module';
+import { ReportsModule } from './reports/reports-module';
+import { TrainingModule } from './training/training.module';
 
 
 @Module({
@@ -33,7 +44,18 @@ import { EmployeeHistoryModule } from './employee/employee-history/history.modul
     DesignationModule,
     EmergencyContactModule,
     EmployeeDocumentModule,
-    EmployeeHistoryModule
+    EmployeeHistoryModule,
+    AttendanceModule,
+    LeaveModule,
+    ExpenseModule,
+    IntegrationModule,
+    OnbordingModule,
+    OrgModule,
+    PayrollModule,
+    PerformanceModule,
+    RecruitmentModule,
+    ReportsModule,
+    TrainingModule
   ],
   controllers: [AppController],
   providers: [AppService],

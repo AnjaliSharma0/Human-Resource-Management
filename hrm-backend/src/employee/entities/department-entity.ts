@@ -8,4 +8,7 @@ export class Department {
 
   @Column()
   name: string;
+
+  @Column()
+  location: string;
 }

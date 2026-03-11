@@ -15,6 +15,12 @@ export class AuthController{
     login(@Body() body:any){
         return this.authService.login(body)
     }
+
+    @Post("activate")
+    activate(@Body() body:{token:string, password:string}){
+    return this.authService.activateEmployee(body);
+    }
+
     @Get('profile')
     @UseGuards(JwtAuthGuard)
     getProfile(@Request() req){

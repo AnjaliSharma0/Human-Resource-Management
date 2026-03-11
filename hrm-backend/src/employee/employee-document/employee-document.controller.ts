@@ -39,7 +39,9 @@ export class EmployeeDocumentController {
     @UploadedFile() file: Express.Multer.File,
     @Body("documentName") documentName: string
   ) {
-
+ if (!file) {
+    return { message: "No file uploaded" };
+  }
   if (!documentName) {
     documentName = file.originalname; // fallback
   }

@@ -1,6 +1,12 @@
-import { IsString } from "class-validator";
+import { IsNotEmpty, IsString } from "class-validator";
 
-export class CreateDepartmentDto{
-    @IsString()
-    name:string
+export class CreateDepartmentDto {
+
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsString()
+  @IsNotEmpty()
+  location: string;
 }

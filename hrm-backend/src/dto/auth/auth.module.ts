@@ -6,9 +6,14 @@ import { PassportModule } from "@nestjs/passport";
 import { JwtModule } from "@nestjs/jwt";
 import { UserModule } from "../users/user.module";
 import { ConfigModule, ConfigService } from "@nestjs/config";
+import { EmailModule } from "src/employee/employee-invitation/email-module.dto";
+import { UserService } from "../users/users-service";
+import { TypeOrmModule } from "@nestjs/typeorm";
+import { User } from "../users/user-entity.dto";
+import { Employee } from "src/employee/entities/employee-entity";
 
 @Module({
-    imports:[
+    imports:[TypeOrmModule.forFeature([User , Employee]),
         UserModule,
         PassportModule,
         ConfigModule,
@@ -19,9 +24,10 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
             secret: configService.get<string>('JWT_SECRET'),
             signOptions:{expiresIn:"1d"}
            })
-        })
+        }),
+        EmailModule
     ],
-    providers:[AuthService, JwtStrategy],
+    providers:[AuthService, JwtStrategy,UserService],
     controllers:[AuthController]
 })
 
