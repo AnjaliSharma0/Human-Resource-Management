@@ -5,19 +5,38 @@ import { CreateEmployeeDto } from "./dto/create.employee.dto";
 import { Roles } from "src/common/decorators/role.decorator";
 import { RolesGaurd } from "src/common/guard/role.guard";
 import { EmployeeTeamDto } from "./dto/employee-team.dto";
+import { EmailService } from "./employee-invitation/email-service";
 
 @Controller("employees")
 @UseGuards(JwtAuthGuard,RolesGaurd)
 export class EmployeeController {
 
-constructor(private employeeService:EmployeeService){}
+constructor(
+ private emailService:EmailService,
+  private employeeService:EmployeeService
+){}
 
 @Post()
 @Roles("admin")
-create(@Body() body:CreateEmployeeDto){
-  return this.employeeService.create(body);
-}
+async create(@Body() body: CreateEmployeeDto) {
 
+  const employee = await this.employeeService.create(body);
+
+
+  if(!employee ){
+    throw new Error("Employee not found")
+  }
+  // send activation email
+  await this.emailService.sendInviteEmail(
+    employee.email,
+    employee.activationToken!
+  );
+
+  return {
+    message: "Employee created successfully. Invitation email sent.",
+    employee
+  };
+}
 @Get()
 @Roles("admin","manager","employee")
 findAll(){

@@ -39,6 +39,7 @@ export class EmployeeDocumentController {
     @UploadedFile() file: Express.Multer.File,
     @Body("documentName") documentName: string
   ) {
+    const relativePath = `documents/${file.filename}`;
  if (!file) {
     return { message: "No file uploaded" };
   }
@@ -49,7 +50,7 @@ export class EmployeeDocumentController {
     return this.documentService.upload(
       Number(id),
       documentName,
-      file.path
+      relativePath
     );
   }
 

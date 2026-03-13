@@ -43,6 +43,9 @@ export class AuthService {
         if (!employee) {
             throw new UnauthorizedException("Invalid token")
         }
+        if (employee.status === "Active") {
+  throw new BadRequestException("Account already activated");
+}
 
         const hash = await bcrypt.hash(data.password, 10)
 

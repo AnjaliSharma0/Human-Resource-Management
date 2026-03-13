@@ -1,26 +1,52 @@
-import { Controller, Post, Body, Get } from '@nestjs/common';
+import { Controller, Post, Get, Req, UseGuards } from '@nestjs/common';
 import { AttendanceService } from './attendance.service';
-
-import { UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/dto/auth/jwt-auth.guard';
-import { AttendanceDto } from './dto/attendence.dto';
+import { Roles } from 'src/common/decorators/role.decorator';
+import { RolesGaurd } from 'src/common/guard/role.guard';
+
 
 @Controller('attendance')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, RolesGaurd) // apply both JWT & roles guard
 export class AttendanceController {
-  constructor(private service: AttendanceService) {}
+  constructor(private readonly service: AttendanceService) {}
 
+  // ---------------------------
+  // Punch-in (employee only)
+  // ---------------------------
   @Post('punch-in')
-  punchIn(@Body() dto: AttendanceDto) {
-    return this.service.punchIn(dto.employeeId);
+  @Roles('employee', 'admin') // allow employee or admin
+  async punchIn(@Req() req) {
+      console.log(req.user); // check JWT payload
+    const employeeId = req.user.id;
+    return this.service.punchIn(employeeId);
   }
 
+  // ---------------------------
+  // Punch-out (employee only)
+  // ---------------------------
   @Post('punch-out')
-  punchOut(@Body() dto: { attendanceId: number }) {
-    return this.service.punchOut(dto.attendanceId);
+  @Roles('employee', 'admin') // allow employee or admin
+  async punchOut(@Req() req) {
+    const employeeId = req.user.id;
+    return this.service.punchOut(employeeId);
   }
-    @Get()
-  getAll() {
+
+  // ---------------------------
+  // Get all attendance records (admin only)
+  // ---------------------------
+  @Get()
+  @Roles('admin') // only admins
+  async getAll() {
     return this.service.findAll();
+  }
+
+  // ---------------------------
+  // Get attendance for logged-in user
+  // ---------------------------
+  @Get('me')
+  @Roles('employee', 'admin') // allow both
+  async getMyAttendance(@Req() req) {
+    const employeeId = req.user.id;
+    return this.service.findByEmployee(employeeId);
   }
 }

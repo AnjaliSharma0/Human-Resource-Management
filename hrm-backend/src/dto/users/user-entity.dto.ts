@@ -1,6 +1,7 @@
 
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Role } from "./user.role";
+// import { Organization } from "src/employee/entities/org-entity.dto";
 
 @Entity()
 export class User{
@@ -24,4 +25,8 @@ export class User{
     default: Role.EMPLOYEE
     })
     role: Role;
+
+    
+//  @ManyToOne(()=>Organization,(org)=>org.users)
+//  organization:Organization;
 }

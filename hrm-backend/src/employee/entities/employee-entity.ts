@@ -116,4 +116,6 @@ activationExpires: Date | null;
 
   @OneToMany(() => OnboardingTask, task => task.employee)
   tasks: OnboardingTask[];
+//   @ManyToOne(() => Organization, org => org.employees)
+// organization: Organization;
 }

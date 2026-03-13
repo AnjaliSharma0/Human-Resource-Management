@@ -17,7 +17,7 @@ export class UsersController {
   }
 
   @Get('employee')
-  @Roles('employee')
+  @Roles('employee','manager')
   getEmployeeData() {
     return "Employee data";
   }

@@ -1,30 +1,35 @@
 import { Injectable } from "@nestjs/common";
-import * as nodemailer from "nodemailer";
+import sgMail from "@sendgrid/mail";
 
 @Injectable()
 export class EmailService {
+  private fromEmail: string;
 
-  private transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: "yourgmail@gmail.com",
-      pass: "your-app-password"
+  constructor() {
+    const apiKey = process.env.SENDGRID_API_KEY;
+    const fromEmail = process.env.SENDGRID_FROM_EMAIL;
+
+    if (!apiKey) {
+      throw new Error("SENDGRID_API_KEY is not defined in .env");
     }
-  });
+
+    if (!fromEmail) {
+      throw new Error("SENDGRID_FROM_EMAIL is not defined in .env");
+    }
+
+    sgMail.setApiKey(apiKey);
+    this.fromEmail = fromEmail; // now guaranteed string
+  }
 
   async sendInviteEmail(email: string, token: string) {
+    const link = `http://localhost:3000/auth/activate?token=${token}`;
 
-    const link = `http://localhost:5000/set-password?token=${token}`;
-
-    await this.transporter.sendMail({
+    await sgMail.send({
       to: email,
+      from: this.fromEmail, // ✅ no TypeScript error
       subject: "Activate your HRMS account",
-      html: `
-        <h3>Welcome to HRMS</h3>
-        <p>Click below to set your password:</p>
-        <a href="${link}">${link}</a>
-      `
+      html: `<h3>Welcome to HRMS</h3>
+             <p>Click <a href="${link}">here</a> to activate your account</p>`,
     });
-
   }
 }

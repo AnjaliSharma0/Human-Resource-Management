@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 
@@ -20,7 +20,8 @@ export class EmployeeService {
     @InjectRepository(Employee)
     private employeeRepo: Repository<Employee>,
 
-   private userService: UserService,
+
+    private userService: UserService,
 
     @InjectRepository(Department)
     private departmentRepo: Repository<Department>,
@@ -31,17 +32,31 @@ export class EmployeeService {
 
   async create(dto: CreateEmployeeDto) {
 
-    const department = await this.departmentRepo.findOne({
-      where: { id: dto.departmentId }
-    });
+    const department = dto.departmentId
+      ? await this.departmentRepo.findOne({ where: { id: dto.departmentId } })
+      : null;
 
-    const designation = await this.designationRepo.findOne({
-      where: { id: dto.designationId }
-    });
+    const designation = dto.designationId
+      ? await this.designationRepo.findOne({ where: { id: dto.designationId } })
+      : null;
 
     const manager = dto.managerId
       ? await this.employeeRepo.findOne({ where: { id: dto.managerId } })
       : null;
+
+    const existingUser = await this.employeeRepo.findOne({
+      where: { email: dto.email }
+    });
+
+    if (existingUser) {
+      throw new BadRequestException("Email already exists");
+    }
+    const createdUser = await this.userService.create({
+      
+      name: dto.firstName,
+      email: dto.email,
+      role: Role.EMPLOYEE
+    });
 
     const employee = this.employeeRepo.create({
       firstName: dto.firstName,
@@ -52,9 +67,10 @@ export class EmployeeService {
       gender: dto.gender,
       address: dto.address,
       joiningDate: dto.joiningDate,
-      department: department!,
-      designation: designation!,
-      manager: manager ?? undefined
+      department: department ?? undefined,
+      designation: designation ?? undefined,
+      manager: manager ?? undefined,
+      user: createdUser,
     });
 
     /* STEP 2: generate activation token */
@@ -65,16 +81,21 @@ export class EmployeeService {
       Date.now() + 1000 * 60 * 60 * 24
     );
 
-
     const savedEmployee = await this.employeeRepo.save(employee);
 
-    await this.userService.create({
-      name: savedEmployee.firstName,
-      email: savedEmployee.email,
-      role: Role.EMPLOYEE
+    // await this.userService.create({
+    //   name: savedEmployee.firstName,
+    //   email: savedEmployee.email,
+    //   role: Role.EMPLOYEE
+    // });
+
+
+    const employeeWithRelations = await this.employeeRepo.findOne({
+      where: { id: savedEmployee.id },
+      relations: ["department", "designation", "manager"]
     });
 
-    return savedEmployee;
+    return employeeWithRelations;
   }
 
   async findAll() {
@@ -98,18 +119,26 @@ export class EmployeeService {
   }
 
   async updateSelf(userId: number, dto: any) {
-
     const employee = await this.employeeRepo.findOne({
-      relations: ["user"],
-      where: { user: { id: userId } }
-    })
-    if (!employee) {
-      throw new Error("Employee not found.")
-    }
-    employee.address = dto.address
-    employee.phone = dto.phone
+      where: { user: { id: userId } }, // <-- use relation syntax
+      relations: ["user", "department", "designation", "manager"],           // include the relation
+    });
 
-    return this.employeeRepo.save(employee)
+    if (!employee) {
+      throw new NotFoundException("Employee not found");
+    }
+
+    Object.assign(employee, dto);
+    return this.employeeRepo.save(employee);
+  }
+
+  async findByUserId(userId: number) {
+    const employee = await this.employeeRepo.findOne({
+      where: { user: { id: userId } }, // <-- relation syntax
+      relations: ["user", "department", "designation", "manager", "emergencyContacts", "documents", "history"],
+    });
+    if (!employee) throw new NotFoundException("Employee not found");
+    return employee;
   }
   async update(id: number, dto: UpdateEmployeeDto) {
 

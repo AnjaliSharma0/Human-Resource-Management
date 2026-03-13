@@ -11,6 +11,7 @@ import { EmployeeHistory } from "./entities/employement-history.entity";
 import { Department } from "./entities/department-entity";
 import { Designation } from "./entities/desigation-entity";
 import { UserModule } from "src/dto/users/user.module";
+import { EmailService } from "./employee-invitation/email-service";
 
 
 @Module({
@@ -25,6 +26,6 @@ import { UserModule } from "src/dto/users/user.module";
       ]
     ,
   controllers: [EmployeeController],
-  providers: [EmployeeService],
+  providers: [EmployeeService,EmailService],
 })
 export class EmployeeModule {}

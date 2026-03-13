@@ -21,9 +21,9 @@ export class AuthController{
     return this.authService.activateEmployee(body);
     }
 
-    @Get('profile')
-    @UseGuards(JwtAuthGuard)
-    getProfile(@Request() req){
-       return req.user;
-    }
+    // @Get('profile')
+    // // @UseGuards(JwtAuthGuard)
+    // getProfile(@Request() req){
+    //    return req.user;
+    // }
 }
