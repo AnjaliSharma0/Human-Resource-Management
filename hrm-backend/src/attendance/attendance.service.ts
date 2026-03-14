@@ -18,7 +18,10 @@ export class AttendanceService {
   // Punch-in (resumable)
   // ---------------------------
   async punchIn(employeeId: number, image?: string) {
-    const employee = await this.userRepo.findOne({ where: { id: employeeId } });
+   const employee = await this.userRepo.findOne({
+  where: { user: { id: employeeId } },
+  relations: ["user"],
+});
     if (!employee) throw new Error('Employee not found');
 
     const today = new Date().toISOString().split('T')[0];
@@ -26,7 +29,7 @@ export class AttendanceService {
     // Use QueryBuilder to find today's attendance
     let record = await this.repo
       .createQueryBuilder('attendance')
-      .where('attendance.employeeId = :employeeId', { employeeId })
+      .where('attendance.employeeId = :employeeId', { employeeId: employee.id })
       .andWhere('attendance.date BETWEEN :start AND :end', {
         start: new Date(`${today}T00:00:00`),
         end: new Date(`${today}T23:59:59`),
@@ -52,10 +55,15 @@ export class AttendanceService {
   // ---------------------------
   async punchOut(employeeId: number) {
     const today = new Date().toISOString().split('T')[0];
+const employee = await this.userRepo.findOne({
+  where: { user: { id: employeeId } },
+  relations: ["user"],
+});
 
+if (!employee) throw new Error("Employee not found");
     const record = await this.repo
       .createQueryBuilder('attendance')
-      .where('attendance.employeeId = :employeeId', { employeeId })
+     .where('attendance.employeeId = :employeeId', { employeeId: employee.id })
       .andWhere('attendance.date BETWEEN :start AND :end', {
         start: new Date(`${today}T00:00:00`),
         end: new Date(`${today}T23:59:59`),

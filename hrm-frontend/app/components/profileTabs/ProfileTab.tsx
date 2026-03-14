@@ -29,18 +29,17 @@ export default function ProfileTab({ employeeId, userRole }: ProfileTabProps) {
   useEffect(() => {
     loadProfile();
   }, [employeeId]);
-
-  const handleUpdate = async () => {
-    if (!canEdit) return;
-    try {
-      await api.patch(`/employees/${employeeId}`, profile);
-      toast.success("Profile updated");
-      setEdit(false);
-    } catch {
-      toast.error("Update failed");
-    }
-  };
-
+const handleUpdate = async () => {
+  if (!canEdit) return;
+  try {
+    const endpoint = userRole === "employee" ? "/employees/me" : `/employees/${employeeId}`;
+    await api.patch(endpoint, profile);
+    toast.success("Profile updated");
+    setEdit(false);
+  } catch {
+    toast.error("Update failed");
+  }
+};
   if (!profile) return <p>Loading...</p>;
 
   return (

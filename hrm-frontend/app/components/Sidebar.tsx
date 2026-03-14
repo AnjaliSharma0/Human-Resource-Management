@@ -12,6 +12,8 @@ import BusinessIcon from "@mui/icons-material/Business";
 import EventIcon from "@mui/icons-material/Event";
 import PaidIcon from "@mui/icons-material/Paid";
 import MenuIcon from "@mui/icons-material/Menu";
+import { DateRangeOutlined, MoodBad, MoodSharp, RestartAlt } from "@mui/icons-material";
+import { CalendarIcon } from "@heroicons/react/24/solid";
 
 export default function Sidebar() {
 
@@ -32,7 +34,10 @@ export default function Sidebar() {
     {name:"Employees",path:"/admin/dashboard/employee",icon:<PeopleIcon/>},
     {name:"Departments",path:"/admin/dashboard/departments",icon:<BusinessIcon/>},
     {name:"Attendance",path:"/attendance",icon:<EventIcon/>},
+    {name:"Leave",path:"/leave/manage",icon:<MoodSharp/>},
     {name:"Payroll",path:"/admin/dashboard/payroll",icon:<PaidIcon/>},
+    {name:"Calendar", path:"/leave/calendar", icon:<DateRangeOutlined/>}
+ 
   ];
 
   const managerMenu = [
@@ -45,6 +50,10 @@ export default function Sidebar() {
     {name:"Dashboard",path:"/employees/dashboard",icon:<DashboardIcon/>},
     {name:"Profile",path:"/employees/dashboard/profile",icon:<PeopleIcon/>},
     {name:"Attendance",path:"/attendance",icon:<EventIcon/>},
+    {name:"Leave", path:"/leave/apply", icon:<MoodBad/>},
+    
+    {name:"Calendar", path:"/leave/calendar", icon:<DateRangeOutlined/>}
+
   ];
 
   const menu =

@@ -43,6 +43,14 @@ findAll(){
   return this.employeeService.findAll();
 }
 
+
+
+@Get("me")
+@Roles("employee")
+findMe(@Req() req: Request & { user: { id: number } }) {
+  return this.employeeService.findByUserId(req.user.id);
+}
+
 @Patch("me")
 @Roles("employee")
 updateSelf(

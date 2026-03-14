@@ -11,7 +11,7 @@ import { useState } from "react";
 
 export default function EmployeeProfile(){
 
-const params = useParams();
+  const params = useParams();
 const [tab,setTab] = useState("profile");
 const employeeId = Array.isArray(params?.id) ? params.id[0] : params?.id;
 

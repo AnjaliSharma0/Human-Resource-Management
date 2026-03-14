@@ -21,6 +21,7 @@ import { PerformanceModule } from './performance/performance-module';
 import { RecruitmentModule } from './recruitment/recruitment-module';
 import { ReportsModule } from './reports/reports-module';
 import { TrainingModule } from './training/training.module';
+import { HolidayModule } from './leave/holiday/holiday-module';
 
 
 @Module({
@@ -55,7 +56,8 @@ import { TrainingModule } from './training/training.module';
     PerformanceModule,
     RecruitmentModule,
     ReportsModule,
-    TrainingModule
+    TrainingModule,
+    HolidayModule
   ],
   controllers: [AppController],
   providers: [AppService],

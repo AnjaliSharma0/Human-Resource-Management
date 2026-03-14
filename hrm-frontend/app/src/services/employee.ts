@@ -46,12 +46,12 @@ export const getTeamMembers = async (id:number) => {
 
 // Get logged-in employee info
 export const getEmployeeInfo = async () => {
-  const response = await api.get("/employee/me");
+  const response = await api.get("/employees/me");
   return response.data;
 };
 
 // Get employees in the same department
 export const getDepartmentEmployees = async () => {
-  const response = await api.get("/employee/department");
+  const response = await api.get("/departments");
   return response.data;
 };

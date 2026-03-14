@@ -17,7 +17,7 @@ export class AttendanceController {
   @Roles('employee', 'admin') // allow employee or admin
   async punchIn(@Req() req) {
       console.log(req.user); // check JWT payload
-    const employeeId = req.user.id;
+    const employeeId = req.user.employeeId;;
     return this.service.punchIn(employeeId);
   }
 
@@ -27,14 +27,14 @@ export class AttendanceController {
   @Post('punch-out')
   @Roles('employee', 'admin') // allow employee or admin
   async punchOut(@Req() req) {
-    const employeeId = req.user.id;
+    const employeeId = req.user.employeeId;
     return this.service.punchOut(employeeId);
   }
 
   // ---------------------------
   // Get all attendance records (admin only)
   // ---------------------------
-  @Get()
+  @Get("all")
   @Roles('admin') // only admins
   async getAll() {
     return this.service.findAll();
@@ -46,7 +46,7 @@ export class AttendanceController {
   @Get('me')
   @Roles('employee', 'admin') // allow both
   async getMyAttendance(@Req() req) {
-    const employeeId = req.user.id;
+    const employeeId = req.user.employeeId;
     return this.service.findByEmployee(employeeId);
   }
 }

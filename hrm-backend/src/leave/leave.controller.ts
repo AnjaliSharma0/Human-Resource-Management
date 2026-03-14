@@ -1,25 +1,53 @@
-import { Body, Controller, Get, Param, Post, Put, UseGuards } from "@nestjs/common";
-import { JwtAuthGuard } from "src/dto/auth/jwt-auth.guard";
+import {
+  Controller,
+  Post,
+  Get,
+  Put,
+  Body,
+  Param,
+  UseGuards,
+  Request,
+} from "@nestjs/common";
+
 import { LeaveService } from "./leave.service";
 import { ApplyLeaveDto } from "./dto/leave.dto";
+import { JwtAuthGuard } from "src/dto/auth/jwt-auth.guard";
 
-@Controller('leave')
+
+@Controller("leave")
 @UseGuards(JwtAuthGuard)
 export class LeaveController {
-  constructor(private service: LeaveService) {}
+  constructor(private readonly leaveService: LeaveService) {}
 
+  // Employee applies leave
   @Post()
   applyLeave(@Body() dto: ApplyLeaveDto) {
-    return this.service.apply(dto);
+    return this.leaveService.applyLeave(dto);
   }
 
+  // Admin / Manager view all leave requests
   @Get()
-  getAll() {
-    return this.service.findAll();
+  findAll() {
+    return this.leaveService.findAll();
   }
 
-  @Put(':id')
-  updateStatus(@Param('id') id: number, @Body() body: { status: 'approved' | 'rejected' }) {
-    return this.service.updateStatus(+id, body.status);
+  // Employee view their leave history
+  @Get("employee/:id")
+  getEmployeeLeaves(@Param("id") id: number) {
+    return this.leaveService.getEmployeeLeaves(+id);
   }
+
+  // Admin / Manager approve or reject leave
+  @Put(":id/status")
+  updateStatus(
+    @Param("id") id: number,
+    @Body() body: { status: "approved" | "rejected" },
+  ) {
+    return this.leaveService.updateStatus(+id, body.status);
+  }
+
+  @Get("calendar")
+getCalendar() {
+  return this.leaveService.getLeaveCalendar();
+}
 }

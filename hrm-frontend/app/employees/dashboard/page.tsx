@@ -1,64 +1,58 @@
 "use client";
 
-import { getDepartmentEmployees, getEmployeeInfo } from "@/app/src/services/employee";
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { UserCircleIcon } from "@heroicons/react/24/solid";
+import api from "@/app/src/services/api";
 
-
-export default function DashboardPage() {
-  const [myInfo, setMyInfo] = useState<any>(null);
-  const [departmentEmployees, setDepartmentEmployees] = useState<any[]>([]);
+export default function EmployeeDashboard() {
+  const [employees, setEmployees] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  // Load all employees in user's department
+  const loadEmployees = async () => {
+    try {
+      const res = await api.get("/employees/me"); // get current user's info
+      const myDepartmentId = res.data.department?.id;
+
+      // fetch all employees
+      const allRes = await api.get("/employees");
+      const deptEmployees = allRes.data.filter(
+        (emp: any) => emp.department?.id === myDepartmentId
+      );
+
+      setEmployees(deptEmployees);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const me = await getEmployeeInfo();
-        const deptEmps = await getDepartmentEmployees();
-        setMyInfo(me);
-        // Filter out self
-        setDepartmentEmployees(deptEmps.filter((emp: { id: any; }) => emp.id !== me.id));
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
+    loadEmployees();
   }, []);
 
-  if (loading) return <p className="p-6">Loading...</p>;
+  if (loading) return <p className="p-6 text-gray-600">Loading...</p>;
+  if (!employees.length) return <p className="p-6 text-gray-500">No employees found in your department.</p>;
 
   return (
-    <div className="p-6 space-y-6">
-      {/* My Info */}
-      {myInfo && (
-        <div className="bg-blue-50 p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-bold mb-2">My Profile</h2>
-          <p><strong>Name:</strong> {myInfo.firstName} {myInfo.lastName}</p>
-          <p><strong>Email:</strong> {myInfo.email}</p>
-          <p><strong>Department:</strong> {myInfo.department}</p>
-          <p><strong>Designation:</strong> {myInfo.designation}</p>
-          <p><strong>Joining Date:</strong> {new Date(myInfo.joiningDate).toLocaleDateString()}</p>
-        </div>
-      )}
-
-      {/* Department Employees */}
-      <div>
-        <h2 className="text-xl font-bold mb-4">Department Colleagues</h2>
-        {departmentEmployees.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {departmentEmployees.map(emp => (
-             <div>
-  <h3 className="font-semibold">{emp.firstName} {emp.lastName}</h3>
-  <p className="text-sm text-gray-500">{emp.designation}</p>
-  <p className="text-sm text-gray-400">{emp.email}</p>
-  {emp.department && <p className="text-sm text-gray-400">{emp.department}</p>}
-</div>
-            ))}
+    <div className="p-6">
+      <h1 className="text-3xl font-bold mb-6">Department Employees</h1>
+      <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {employees.map((emp) => (
+          <div
+            key={emp.id}
+            className="bg-white shadow-md rounded-xl p-4 flex flex-col items-center text-center cursor-pointer hover:shadow-lg transition"
+            onClick={() => router.push(`/employee/${emp.id}`)} // redirect to profile page
+          >
+            <UserCircleIcon className="h-16 w-16 text-gray-400 mb-3" />
+            <h2 className="font-semibold">{emp.firstName} {emp.lastName}</h2>
+            <p className="text-gray-500 text-sm">{emp.designation?.title}</p>
+            <p className="text-gray-400 text-sm">{emp.email}</p>
           </div>
-        ) : (
-          <p>No other employees in your department.</p>
-        )}
+        ))}
       </div>
     </div>
   );
