@@ -9,8 +9,9 @@ import { UpdateEmployeeDto } from "./dto/update.employee.dto";
 import { Employee } from "./entities/employee-entity";
 import { EmployeeProfileDto } from "./dto/create-employee-profile";
 import { EmployeeTeamDto } from "./dto/employee-team.dto";
-import { Role } from "src/dto/users/user.role";
-import { UserService } from "src/dto/users/users-service";
+import { Role } from "../dto/users/user.role";
+import { UserService } from "../dto/users/users-service";
+import { SalaryGrade } from "src/payroll/salaryGrade/salary-grade.entity";
 
 
 @Injectable()
@@ -19,7 +20,8 @@ export class EmployeeService {
   constructor(
     @InjectRepository(Employee)
     private employeeRepo: Repository<Employee>,
-
+    @InjectRepository(SalaryGrade)
+    private salaryGradeRepo: Repository<SalaryGrade>,
 
     private userService: UserService,
 
@@ -40,22 +42,30 @@ export class EmployeeService {
       ? await this.designationRepo.findOne({ where: { id: dto.designationId } })
       : null;
 
-    const manager = dto.managerId
-      ? await this.employeeRepo.findOne({ where: { id: dto.managerId } })
-      : null;
+    let manager: Employee | null = null;
+    if (dto.role === Role.EMPLOYEE && dto.managerId) {
+      manager = await this.employeeRepo.findOne({ where: { id: dto.managerId } });
+      if (!manager) throw new BadRequestException("Manager not found");
+    }
 
-    const existingUser = await this.employeeRepo.findOne({
+    let salaryGrade: SalaryGrade | null = null;
+    if (dto.salaryGradeId) {
+      salaryGrade = await this.salaryGradeRepo.findOne({ where: { id: dto.salaryGradeId } });
+      if (!salaryGrade) throw new BadRequestException("Salary grade not found");
+    }
+      const existingUser = await this.employeeRepo.findOne({
       where: { email: dto.email }
     });
+
 
     if (existingUser) {
       throw new BadRequestException("Email already exists");
     }
     const createdUser = await this.userService.create({
-      
+
       name: dto.firstName,
       email: dto.email,
-      role: Role.EMPLOYEE
+      role: dto.role ?? Role.EMPLOYEE
     });
 
     const employee = this.employeeRepo.create({
@@ -70,6 +80,7 @@ export class EmployeeService {
       department: department ?? undefined,
       designation: designation ?? undefined,
       manager: manager ?? undefined,
+      salaryGrade: salaryGrade ?? undefined,
       user: createdUser,
     });
 
@@ -92,7 +103,7 @@ export class EmployeeService {
 
     const employeeWithRelations = await this.employeeRepo.findOne({
       where: { id: savedEmployee.id },
-      relations: ["department", "designation", "manager"]
+      relations: ["department", "designation", "manager","salaryGrade"]
     });
 
     return employeeWithRelations;
@@ -100,7 +111,7 @@ export class EmployeeService {
 
   async findAll() {
     return this.employeeRepo.find({
-      relations: ["department", "designation", "manager"]
+      relations: ["user","department", "designation", "manager"]
     });
   }
 

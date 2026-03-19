@@ -1,29 +1,55 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from "@nestjs/common"
-import { OrgService } from "./org-service"
+import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { EmployeeNode, OrgStructureService } from './org-service';
+import { Department } from 'src/employee/entities/department-entity';
+import { BusinessUnit } from './buisness-unit.entity';
+import { CreateLocationDto } from './location.dto';
 
-@Controller("org")
-export class OrgController{
 
-constructor(private service:OrgService){}
+@Controller('org')
+export class OrgStructureController {
+  constructor(private readonly orgService: OrgStructureService) {}
 
-@Post("department")
-create(@Body() body){
-return this.service.create(body)
+  // ---------------- Departments ----------------
+  @Get('departments')
+  getDepartments() {
+    return this.orgService.findAllDepartments();
+  }
+
+  @Get('departments/:id')
+  getDepartment(@Param('id') id: number) {
+    return this.orgService.findDepartmentById(id);
+  }
+
+  @Post('departments')
+  createDepartment(@Body() body: Partial<Department>) {
+    return this.orgService.createDepartment(body);
+  }
+
+  // ---------------- Locations ----------------
+  @Get('locations')
+  getLocations() {
+    return this.orgService.findAllLocations();
+  }
+
+ @Post('locations')
+createLocation(@Body() body: CreateLocationDto) {
+  return this.orgService.createLocation(body);
 }
 
-@Get("departments")
-getAll(){
-return this.service.getAll()
-}
+  // ---------------- Business Units ----------------
+  @Get('business-units')
+  getBusinessUnits() {
+    return this.orgService.findAllBusinessUnits();
+  }
 
-@Put("department/:id")
-update(@Param("id") id:number,@Body() body){
-return this.service.update(id,body)
-}
+  @Post('business-units')
+  createBusinessUnit(@Body() body: Partial<BusinessUnit>) {
+    return this.orgService.createBusinessUnit(body);
+  }
 
-@Delete("department/:id")
-delete(@Param("id") id:number){
-return this.service.delete(id)
-}
-
+  // ---------------- Org Chart ----------------
+   @Get('hierarchy')
+  getHierarchy(): Promise<EmployeeNode[]> {
+    return this.orgService.getOrgHierarchy();
+  }
 }

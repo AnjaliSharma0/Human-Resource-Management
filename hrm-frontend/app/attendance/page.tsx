@@ -1,20 +1,10 @@
 "use client";
 
-import {
-Dialog,
-DialogTitle,
-DialogContent,
-DialogActions,
-TextField
-} from "@mui/material";
-import { useState, useEffect, useRef } from "react";
-import toast from "react-hot-toast";
-import Button from "@mui/material/Button";
-import { AccessTime, Login, Logout, History } from "@mui/icons-material";
-import { Paper, Typography, Stack, Divider } from "@mui/material";
-import AttendanceChart from "../components/AttendanceChart";
+import { useEffect, useState, useRef } from "react";
 import axios from "axios";
-import ProjectChart from "../components/ProjectChart";
+import toast from "react-hot-toast";
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
+
 type Session = {
   clockIn: string;
   clockOut?: string;
@@ -22,523 +12,284 @@ type Session = {
 
 type Attendance = {
   id: number;
+  employeeId: number;
+  firstName: string;
   date: string;
   sessions: Session[];
   totalHours: number;
   overtimeHours: number;
 };
 
-export default function AttendancePanel() {
+export default function AttendanceDashboard() {
   const [attendance, setAttendance] = useState<Attendance | null>(null);
-  const [timer, setTimer] = useState<string>("00:00:00");
-  // const [intervalId, setIntervalId] = useState<number | null>(null);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
   const [history, setHistory] = useState<Attendance[]>([]);
-  const [token, setToken] = useState<string | null>(null);
-  const [editOpen, setEditOpen] = useState(false);
-const [editId, setEditId] = useState<number | null>(null);
-const [clockIn, setClockIn] = useState("");
-const [clockOut, setClockOut] = useState("");
-  const backendUrl = "http://localhost:5000/attendance";
+  const [timer, setTimer] = useState<string>("00:00:00");
+  const [role, setRole] = useState<string>("");
+  const [userId, setUserId] = useState<string>("");
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const backend = "http://localhost:5000/attendance";
 
-const [role, setRole] = useState<string | null>(null);
+  const isRunning = Boolean(
+    attendance?.sessions?.length &&
+    !attendance.sessions[attendance.sessions.length - 1]?.clockOut
+  );
 
-useEffect(() => {
-  const storedToken = localStorage.getItem("token");
-  const storedRole = localStorage.getItem("role");
+  const startTimer = (clockIn: string) => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
 
-  setToken(storedToken);
-  setRole(storedRole);
-}, []);
+    intervalRef.current = setInterval(() => {
+      const diff = Date.now() - new Date(clockIn).getTime();
+      const h = Math.floor(diff / 3600000).toString().padStart(2, "0");
+      const m = Math.floor((diff % 3600000) / 60000)
+        .toString()
+        .padStart(2, "0");
+      const s = Math.floor((diff % 60000) / 1000).toString().padStart(2, "0");
 
-const WORK_LIMIT = 8;
+      setTimer(`${h}:${m}:${s}`);
+    }, 1000);
+  };
 
-useEffect(() => {
-  if (role) {
-    fetchAttendance();
-  }
+  const fetchAttendance = async (token: string, role: string) => {
+    try {
+      const endpoint = role === "admin" ? "/all" : "/me";
+      const res = await axios.get(`${backend}${endpoint}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
-  return () => stopTimer();
-}, [role]); 
-const fetchAttendance = async () => {
-  try {
+      setHistory(res.data);
 
-    const endpoint =
-      role === "admin"
-        ? `${backendUrl}/all`
-        : `${backendUrl}/me`;
-    const res = await fetch(endpoint, {
-      headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-    });
-    if (!res.ok) throw new Error("Unauthorized or server error");
-    const data: Attendance[] = await res.json();
-    if (!Array.isArray(data)) throw new Error("Invalid attendance data");
+      if (role !== "admin") {
+        const today = res.data.find(
+          (a: Attendance) =>
+            new Date(a.date).toDateString() === new Date().toDateString()
+        );
+        setAttendance(today);
 
-    const today = data.find(a => new Date(a.date).toDateString() === new Date().toDateString());
-    setAttendance(today || null);
-    setHistory(data.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-
-    if (today?.sessions?.length) {
-      const lastSession = today.sessions[today.sessions.length - 1];
-      if (!lastSession.clockOut) startTimer(new Date(lastSession.clockIn));
-    }
-  } catch (err: any) {
-    console.error(err);
-    toast.error(err.message || "Failed to fetch attendance");
-  }
-};
-
-  useEffect(() => {
-    fetchAttendance();
-    // cleanup timer on unmount
-    return () => stopTimer();
-  }, []);
-
-  // -------------------
-  // Real-time timer
-  // -------------------
-  // const startTimer = (clockInTime: Date) => {
-  //   if (intervalId) clearInterval(intervalId);
-
-  //   const id = window.setInterval(() => {
-  //     const now = new Date();
-  //     const diff = now.getTime() - new Date(clockInTime).getTime();
-  //     const hours = Math.floor(diff / (1000 * 3600))
-  //       .toString()
-  //       .padStart(2, "0");
-  //     const minutes = Math.floor((diff % (1000 * 3600)) / (1000 * 60))
-  //       .toString()
-  //       .padStart(2, "0");
-  //     const seconds = Math.floor((diff % (1000 * 60)) / 1000)
-  //       .toString()
-  //       .padStart(2, "0");
-  //     setTimer(`${hours}:${minutes}:${seconds}`);
-  //   }, 1000);
-  //   setIntervalId(id);
-  // };
-  const startTimer = (clockInTime: Date) => {
-
-  if (timerRef.current) {
-    clearInterval(timerRef.current);
-  }
-
-  timerRef.current = setInterval(() => {
-
-    const now = new Date();
-    const diff = now.getTime() - new Date(clockInTime).getTime();
-
-    const hours = Math.floor(diff / (1000 * 3600))
-      .toString()
-      .padStart(2, "0");
-
-    const minutes = Math.floor((diff % (1000 * 3600)) / (1000 * 60))
-      .toString()
-      .padStart(2, "0");
-
-    const seconds = Math.floor((diff % (1000 * 60)) / 1000)
-      .toString()
-      .padStart(2, "0");
-
-    setTimer(`${hours}:${minutes}:${seconds}`);
-
-  }, 1000);
-};
-
-  
-
-  const stopTimer = () => {
-
-  if (timerRef.current) {
-    clearInterval(timerRef.current);
-    timerRef.current = null;
-  }
-
-  setTimer("00:00:00");
-};
-  // -------------------
-  // Punch In
-  // -------------------
-
-
- useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    setToken(storedToken);
-  }, []);
-
-// -------------------
-// Punch In
-// -------------------
-const handlePunchIn = async () => {
-  try {
-    const res = await axios.post(
-      `${backendUrl}/punch-in`,
-      {}, // replace userId with logged-in employee id
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        withCredentials: true, // if your backend uses cookies
-      }
-    );
-
-    toast.success("Punched in!");
-    fetchAttendance();
-  } catch (err: any) {
-    console.error(err.response || err);
-    toast.error(err.response?.data?.message || "Punch in failed");
-  }
-};
-
-// -------------------
-// Punch Out
-// -------------------
-const handlePunchOut = async () => {
-  try {
-    const res = await axios.post(
-      `${backendUrl}/punch-out`,
-      { }, // replace userId with logged-in employee id
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        withCredentials: true,
-      }
-    );
-
-    toast.success("Punched out!");
-    stopTimer();
-    fetchAttendance();
-  } catch (err: any) {
-    console.error(err.response || err);
-    toast.error(err.response?.data?.message || "Punch out failed");
-  }
-};
-
-const openEditModal = (id: number) => {
-  setEditId(id);
-  setEditOpen(true);
-};
-
-const saveAttendanceEdit = async () => {
-  try {
-    await axios.patch(
-      `${backendUrl}/${editId}`,
-      {
-        clockIn,
-        clockOut
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`
+        if (today?.sessions?.length) {
+          const last = today.sessions.at(-1);
+          if (last && !last.clockOut) startTimer(last.clockIn);
         }
       }
-    );
+    } catch (err) {
+      console.error(err);
+      toast.error("Cannot load attendance");
+    }
+  };
 
-    toast.success("Attendance updated");
-    setEditOpen(false);
-    fetchAttendance();
-  } catch (err: any) {
-    toast.error(err.response?.data?.message || "Update failed");
-  }
-};
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const storedRole = localStorage.getItem("role") || "";
+    const storedUserId = localStorage.getItem("userId") || "";
+    setRole(storedRole);
+    setUserId(storedUserId);
+    if (token && storedRole) {
+      fetchAttendance(token, storedRole);
+    }
+  }, []);
+
+  const punchIn = async () => {
+    if (role === "admin") return;
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    await axios.post(`${backend}/punch-in`, {}, { headers: { Authorization: `Bearer ${token}` } });
+    toast.success("Punched In");
+    fetchAttendance(token, role);
+  };
+
+  const punchOut = async () => {
+    if (role === "admin") return;
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    await axios.post(`${backend}/punch-out`, {}, { headers: { Authorization: `Bearer ${token}` } });
+    toast.success("Punched Out");
+    // ✅ stop timer
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    setTimer("00:00:00");
+    fetchAttendance(token, role);
+  };
+
+  // Helper functions
+  const isLate = (sessions: Session[]) => {
+    const firstSession = sessions[0];
+    if (!firstSession) return true;
+    return new Date(firstSession.clockIn).getHours() > 10;
+  };
+
+  const isMissingEveningPunch = (sessions: Session[]) => {
+    const lastSession = sessions.at(-1);
+    if (!lastSession) return true;
+    if (!lastSession.clockOut) return true;
+    return new Date(lastSession.clockOut).getHours() < 19;
+  };
+
+  const getTotalLoggedTime = (sessions: Session[]) => {
+    let total = 0;
+    sessions.forEach((s) => {
+      const start = new Date(s.clockIn).getTime();
+      const end = s.clockOut ? new Date(s.clockOut).getTime() : Date.now();
+      total += end - start;
+    });
+    const h = Math.floor(total / 3600000);
+    const m = Math.floor((total % 3600000) / 60000);
+    return `${h}h ${m}m`;
+  };
+
+  // Analytics
+  const totalEmployees = history.length;
+  const currentlyPunchedIn = history.filter((a) =>
+    a.sessions.length && !a.sessions.at(-1)?.clockOut
+  );
+  const lateToday = history.filter((a) => isLate(a.sessions));
+  const missingEveningPunch = history.filter((a) => isMissingEveningPunch(a.sessions));
+
+  const chartData = [
+    { name: "On Time", value: totalEmployees - lateToday.length },
+    { name: "Late", value: lateToday.length },
+  ];
+
+  const COLORS = ["#4ade80", "#facc15"]; // green for on time, yellow for late
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="grid grid-cols-4 gap-4 mb-6">
+    <div className="p-8 space-y-8">
+      <h1 className="text-4xl font-bold text-gray-800 mb-6">Attendance Dashboard</h1>
 
-<div className="bg-white p-4 rounded-xl shadow">
-<p className="text-gray-500">Total Hours Today</p>
-<h2 className="text-2xl font-bold">
-{attendance?.totalHours?.toFixed(2) || 0}h
-</h2>
-</div>
+      {role !== "admin" && (
+        <div className="flex gap-4 mb-6">
 
-<div className="bg-white p-4 rounded-xl shadow">
-<p className="text-gray-500">Overtime</p>
-<h2 className="text-2xl font-bold">
-{attendance?.overtimeHours?.toFixed(2) || 0}h
-</h2>
-</div>
-
-<div className="bg-white p-4 rounded-xl shadow">
-<p className="text-gray-500">Sessions</p>
-<h2 className="text-2xl font-bold">
-{attendance?.sessions?.length || 0}
-</h2>
-</div>
-
-<div className="bg-white p-4 rounded-xl shadow">
-<p className="text-gray-500">Timer</p>
-<h2 className="text-2xl font-bold">{timer}</h2>
-</div>
-
-</div>
-      <Typography variant="h4" gutterBottom>
-        Attendance Panel
-      </Typography>
-
-      {/* Punch In / Punch Out Buttons */}
-      <Stack direction="row" spacing={2} mb={4}>
-        <Button
-          variant="contained"
-          color="success"
-          startIcon={<Login />}
-          onClick={handlePunchIn}
-          disabled={Boolean(attendance?.sessions?.length && !attendance.sessions.at(-1)?.clockOut)}
-         
-        >
-          Punch In
-        </Button>
-        <Button
-          variant="contained"
-          color="error"
-          startIcon={<Logout />}
-          onClick={handlePunchOut}
-        //   disabled={Boolean(attendance?.sessions?.length && !attendance.sessions.at(-1)?.clockOut)}
-        >
-          Punch Out
-        </Button>
-        {role === "admin" && (
-
-<Button
-variant="contained"
-color="primary"
-onClick={() => window.location.href = "/admin/employee-attendance"}
->
-View Employee Attendance
-</Button>
-
-)}
-      </Stack>
-
-      {/* Real-time Timer */}
-      {attendance?.sessions?.length && !attendance.sessions.at(-1)?.clockOut && (
-        <Paper sx={{ p: 2, mb: 4 }} elevation={2}>
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <AccessTime />
-            <Typography variant="h6">
-              Current Session Timer: {timer}
-            </Typography>
-          </Stack>
-        </Paper>
-      )}
-
-      {/* Total Hours & Overtime */}
-      {attendance && (
-        <Paper sx={{ p: 2, mb: 4 }} elevation={2}>
-          <Typography variant="body1">
-            <strong>Total Hours Today:</strong> {attendance.totalHours.toFixed(2)} h
-          </Typography>
-          <Typography variant="body1">
-            <strong>Overtime Today:</strong> {attendance.overtimeHours.toFixed(2)} h
-          </Typography>
-        </Paper>
-      )}
-
-      {/* Multi-day Attendance History
-      <Paper sx={{ p: 2 }} elevation={2}>
-        <Stack direction="row" alignItems="center" spacing={1} mb={2}>
-          <History />
-          <Typography variant="h6">Attendance History</Typography>
-        </Stack>
-        <Divider sx={{ mb: 2 }} />
-        {history.length ? (
-          <Stack spacing={2}>
-            {history.map((a) => (
-              <Paper key={a.id} sx={{ p: 2 }} variant="outlined">
-                <Typography variant="subtitle1">
-                  {new Date(a.date).toDateString()}
-                </Typography>
-                <Typography variant="body2">
-                  Total Hours: {a.totalHours.toFixed(2)} h | Overtime: {a.overtimeHours.toFixed(2)} h
-                </Typography>
-                                      {role === "admin" && (
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        onClick={() => openEditModal(a.id)}
-                      >
-                        Edit
-                      </Button>
-                    )}
-         
-                     <Stack mt={1} spacing={0.5}>
-                  {a.sessions.map((s, idx) => (
-                    <Typography key={idx} variant="body2">
-                      {new Date(s.clockIn).toLocaleTimeString()} -{" "}
-                      {s.clockOut ? new Date(s.clockOut).toLocaleTimeString() : "Ongoing"}
-                    </Typography>
-
-                    
-                  ))}
-                </Stack>
-              </Paper>
-            ))}
-          </Stack>
-        ) : (
-          <Typography>No attendance history</Typography>
-        )}
-      </Paper> */}
-
-      {/* Multi-day Attendance History */}
-<Paper sx={{ p: 3 }} elevation={3}>
-
-  <Stack direction="row" alignItems="center" spacing={1} mb={3}>
-    <History color="primary" />
-    <Typography variant="h6" fontWeight="bold">
-      Attendance History
-    </Typography>
-  </Stack>
-
-  <Divider sx={{ mb: 3 }} />
-
-  {history.length ? (
-
-    <div className="grid md:grid-cols-2 gap-4">
-
-      {history.map((a) => (
-
-        <Paper
-          key={a.id}
-          elevation={1}
-          className="p-4 rounded-xl transition-all duration-300 hover:shadow-xl hover:scale-[1.02] border border-gray-100"
-        >
-
-          {/* Header */}
-          <Stack
-            direction="row"
-            justifyContent="space-between"
-            alignItems="center"
-            mb={1}
+          <button
+            onClick={punchIn}
+            disabled={isRunning}
+            className={`px-6 py-2 rounded-lg text-white font-medium
+      ${isRunning ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 hover:bg-green-700"}`}
           >
+            Punch In
+          </button>
 
-            <Stack direction="row" spacing={1} alignItems="center">
-              <AccessTime color="action" />
+          <button
+            onClick={punchOut}
+            disabled={!isRunning}
+            className={`px-6 py-2 rounded-lg text-white font-medium
+      ${!isRunning ? "bg-gray-400 cursor-not-allowed" : "bg-red-600 hover:bg-red-700"}`}
+          >
+            Punch Out
+          </button>
 
-              <Typography fontWeight="bold">
-                {new Date(a.date).toDateString()}
-              </Typography>
-            </Stack>
+          <div className="ml-4 text-lg font-semibold text-gray-700">
+            Timer: {timer}
+          </div>
 
-            {role === "admin" && (
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => openEditModal(a.id)}
-              >
-                Edit
-              </Button>
-            )}
+        </div>
+      )}
+      {/* Analytics cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition text-center">
+          <p className="text-gray-500">Total Employees</p>
+          <h2 className="text-2xl font-bold">{totalEmployees}</h2>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition text-center">
+          <p className="text-gray-500">Currently Punched In</p>
+          <h2 className="text-2xl font-bold text-blue-600">{currentlyPunchedIn.length}</h2>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition text-center">
+          <p className="text-gray-500">Late Today</p>
+          <h2 className="text-2xl font-bold text-yellow-500">{lateToday.length}</h2>
+        </div>
+        <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition text-center">
+          <p className="text-gray-500">Missing Evening Punch</p>
+          <h2 className="text-2xl font-bold text-red-500">{missingEveningPunch.length}</h2>
+        </div>
+      </div>
 
-          </Stack>
+      {/* Pie chart */}
+      <div className="bg-white p-6 rounded-xl shadow w-full h-64">
+        <h2 className="text-xl font-semibold mb-4">Attendance Status</h2>
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={chartData}
+              dataKey="value"
+              nameKey="name"
+              outerRadius={80}
+              fill="#8884d8"
+              label
+            >
+              {chartData.map((entry, index) => (
+                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              ))}
+            </Pie>
+            <Tooltip />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
 
-          {/* Hours */}
-          <Stack direction="row" spacing={3} mb={2}>
-
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Login fontSize="small" color="success" />
-              <Typography variant="body2">
-                {a.totalHours.toFixed(2)} h
-              </Typography>
-            </Stack>
-
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Logout fontSize="small" color="error" />
-              <Typography variant="body2">
-                OT: {a.overtimeHours.toFixed(2)} h
-              </Typography>
-            </Stack>
-
-          </Stack>
-
-          {/* Sessions */}
-          <Stack spacing={0.5}>
-
-            {a.sessions.map((s, idx) => (
-
-              <div
-                key={idx}
-                className="flex justify-between text-sm bg-gray-50 rounded-lg px-3 py-1"
-              >
-
-                <span>
-                  {new Date(s.clockIn).toLocaleTimeString()}
-                </span>
-
-                <span>
-                  {s.clockOut
-                    ? new Date(s.clockOut).toLocaleTimeString()
-                    : "Ongoing"}
-                </span>
-
-              </div>
-
+      {/* Currently punched in employees */}
+      {currentlyPunchedIn.length > 0 && (
+        <div className="bg-blue-50 p-6 rounded-xl shadow space-y-2">
+          <h2 className="text-xl font-semibold text-blue-700">Currently Punched In</h2>
+          <div className="flex flex-wrap gap-4">
+            {currentlyPunchedIn.map((a) => (
+              <span key={a.id} className="px-3 py-1 bg-blue-200 text-blue-800 rounded-full font-medium text-sm">
+                {a.firstName} (ID: {a.employeeId})
+              </span>
             ))}
+          </div>
+        </div>
+      )}
+      {role !== "admin" && attendance && (
+        <div className="bg-green-50 p-6 rounded-xl shadow">
+          <h2 className="text-xl font-semibold mb-2">Today's Attendance</h2>
+          <p><strong>Employee ID:</strong> {userId}</p>
+          <p><strong>Name:</strong> {attendance.firstName || "You"}</p>
+          <p>Date: {new Date(attendance.date).toDateString()}</p>
 
-          </Stack>
+          <p>Total Hours: {attendance.totalHours}h</p>
 
-        </Paper>
+          <div className="mt-2">
+            {attendance.sessions.map((s, i) => (
+              <div key={i}>
+                {new Date(s.clockIn).toLocaleTimeString()} -
+                {s.clockOut
+                  ? new Date(s.clockOut).toLocaleTimeString()
+                  : " Running"}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {/* Attendance history cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {history.map((a) => (
+          <div
+            key={a.id}
+            className={`bg-white p-6 rounded-xl shadow hover:shadow-2xl transition border-l-8
+              ${isLate(a.sessions) ? "border-yellow-500" : "border-green-500"}
+              ${isMissingEveningPunch(a.sessions) ? "border-red-500" : ""}`}
+          >
+            <h3 className="text-lg font-semibold text-gray-800">
+              {a.firstName || (role !== "admin" ? "You" : "Unknown")}
+            </h3>
 
-      ))}
-
-    </div>
-
-  ) : (
-
-    <Typography color="text.secondary">
-      No attendance history
-    </Typography>
-
-  )}
-
-</Paper>
-   <div className="grid grid-cols-2 gap-6 mt-6">
-  <AttendanceChart data={history} />
-  <ProjectChart hours={attendance?.totalHours || 0} />
-</div>
-<Dialog open={editOpen} onClose={() => setEditOpen(false)}>
-
-<DialogTitle>Edit Attendance</DialogTitle>
-
-<DialogContent>
-
-<TextField
-label="Clock In"
-type="time"
-fullWidth
-margin="normal"
-value={clockIn}
-onChange={(e) => setClockIn(e.target.value)}
-InputLabelProps={{ shrink: true }}
-/>
-
-<TextField
-label="Clock Out"
-type="time"
-fullWidth
-margin="normal"
-value={clockOut}
-onChange={(e) => setClockOut(e.target.value)}
-InputLabelProps={{ shrink: true }}
-/>
-
-</DialogContent>
-
-<DialogActions>
-
-<Button onClick={() => setEditOpen(false)}>
-Cancel
-</Button>
-
-<Button variant="contained" onClick={saveAttendanceEdit}>
-Save
-</Button>
-
-</DialogActions>
-
-</Dialog>
+            <p className="text-sm text-gray-500">
+              ID: {a.employeeId || (role !== "admin" ? userId : "-")}
+            </p>
+            <p className="text-sm text-gray-500">{new Date(a.date).toDateString()}</p>
+            <p className="font-medium mt-2">Total Logged: {getTotalLoggedTime(a.sessions)}</p>
+            <p className="text-gray-700">{a.totalHours}h • OT {a.overtimeHours}h</p>
+            <div className="mt-2 space-y-1">
+              {a.sessions.length === 0 && <p className="text-red-500 font-medium">Not punched in</p>}
+              {a.sessions.map((s, i) => (
+                <div key={i} className="text-sm text-gray-700">
+                  {new Date(s.clockIn).toLocaleTimeString()} - {s.clockOut ? new Date(s.clockOut).toLocaleTimeString() : <span className="text-green-600 font-medium">Running</span>}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

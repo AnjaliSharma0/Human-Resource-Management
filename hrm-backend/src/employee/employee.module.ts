@@ -10,8 +10,9 @@ import { EmergencyContact } from "./entities/employement-contact.entity";
 import { EmployeeHistory } from "./entities/employement-history.entity";
 import { Department } from "./entities/department-entity";
 import { Designation } from "./entities/desigation-entity";
-import { UserModule } from "src/dto/users/user.module";
+import { UserModule } from "../dto/users/user.module";
 import { EmailService } from "./employee-invitation/email-service";
+import { SalaryGrade } from "src/payroll/salaryGrade/salary-grade.entity";
 
 
 @Module({
@@ -21,7 +22,9 @@ import { EmailService } from "./employee-invitation/email-service";
        Department, 
        Designation,
         EmployeeHistory ,
-         EmergencyContact]),
+         EmergencyContact,
+         SalaryGrade
+        ]),
        UserModule
       ]
     ,

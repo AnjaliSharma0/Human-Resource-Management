@@ -5,23 +5,28 @@ import {
   OneToMany,
   ManyToOne,
   JoinColumn,
-  OneToOne
+  OneToOne,
+  ManyToMany,
+  JoinTable
 } from "typeorm";
 import { EmergencyContact } from "./employement-contact.entity";
 import { EmployeeDocument } from "./document-entity";
 
-import { User } from "src/dto/users/user-entity.dto";
+import { User } from "../../dto/users/user-entity.dto";
 import { Designation } from "./desigation-entity";
 import { Department } from "./department-entity";
 import { EmployeeHistory } from "./employement-history.entity";
 import { Attendance } from "../../attendance/attendance.entity";
-import { Leave } from "src/leave/leave.entity";
-import { Payroll } from "src/payroll/payroll.entity";
-import { Goal } from "src/performance/goal.entity";
-import { Review } from "src/performance/review.entity";
-import { Enrollment } from "src/training/enrollment.entity";
-import { Expense } from "src/expenses/expenses.entity";
-import { OnboardingTask } from "src/onbording/onboarding.entity";
+import { Leave } from "../../leave/leave.entity";
+import { Payroll } from "../../payroll/payroll.entity";
+import { Goal } from "../../performance/goal.entity";
+import { Review } from "../../performance/review.entity";
+import { Expense } from "../../expenses/expenses.entity";
+// import { OnboardingTask } from "../../onbording/entity/onboarding.entity";
+import { SalaryGrade } from "src/payroll/salaryGrade/salary-grade.entity";
+import { TrainingEnrollment } from "src/training/training-enrollment.entity";
+import { Skill } from "src/training/skill-entity";
+
 
 @Entity()
 export class Employee {
@@ -77,6 +82,10 @@ activationExpires: Date | null;
   @JoinColumn({ name: "managerId" })
   manager: Employee;
 
+
+   @ManyToOne(() => SalaryGrade, { nullable: true })
+  salaryGrade: SalaryGrade;
+
   @OneToOne(()=> User)
   @JoinColumn()
   user:User
@@ -108,14 +117,29 @@ activationExpires: Date | null;
   @OneToMany(() => Review, review => review.employee)
   reviews: Review[];
 
-  @OneToMany(() => Enrollment, enrollment => enrollment.employee)
-  enrollments: Enrollment[];
+  @OneToMany(() => TrainingEnrollment, enrollment => enrollment.employee)
+  enrollments: TrainingEnrollment[];
 
   @OneToMany(() => Expense, expense => expense.employee)
   expenses: Expense[];
 
-  @OneToMany(() => OnboardingTask, task => task.employee)
-  tasks: OnboardingTask[];
+  // @OneToMany(() => OnboardingTask, task => task.employee)
+  // tasks: OnboardingTask[];
 //   @ManyToOne(() => Organization, org => org.employees)
 // organization: Organization;
+
+  @ManyToMany(() => Skill, { cascade: true })
+  @JoinTable() // only put @JoinTable() on one side
+  skills: Skill[];
+
+  
+ @Column({ nullable: true })
+  bankAccountNumber: string;
+
+  @Column({ nullable: true })
+  bankIFSC: string;
+
+  @Column({ nullable: true })
+  panNumber: string;
+   
 }

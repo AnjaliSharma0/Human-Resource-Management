@@ -61,10 +61,12 @@ export default function Navbar() {
                 {open && (
                     <div className="absolute right-0 top-10 bg-white dark:bg-gray-800 shadow-lg rounded-xl p-3 w-44 z-50">
                         {/* Profile Link */}
-                        <p className="text-sm text-gray-800 dark:text-gray-200 mb-2 px-3 py-2 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200">
-                            Profile
-                        </p>
-
+                   <p
+  className="text-sm text-gray-800 dark:text-gray-200 mb-2 px-3 py-2 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+  onClick={() => router.push("/employees/dashboard/profile")}
+>
+  Profile
+</p>
                         {/* Logout Button */}
                         <button
                             onClick={logout}

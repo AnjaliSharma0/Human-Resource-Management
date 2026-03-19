@@ -1,6 +1,11 @@
-export class EnrollDto {
+import { IsNumber, IsNotEmpty, IsString } from 'class-validator'
 
-  employeeId: number;
-  courseId: number;
+export class EnrollTrainingDto {
+  @IsNumber() courseId: number;
+}
 
+
+export class TrainingFeedbackDto {
+  @IsNumber() enrollmentId: number;
+  @IsString() @IsNotEmpty() feedback: string;
 }

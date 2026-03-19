@@ -42,6 +42,19 @@ export const getTeamMembers = async (id:number) => {
   return res.data;
 };
 
+// src/services/employee.ts
+import axios from "axios";
+
+export const getAllEmployees = async () => {
+  const token = localStorage.getItem("token");
+  const res = await api.get("/employees", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return res.data;
+};
+
 
 
 // Get logged-in employee info

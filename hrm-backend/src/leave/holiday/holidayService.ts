@@ -19,6 +19,7 @@ export class HolidayService {
   findAll() {
     return this.holidayRepo.find({ order: { date: "ASC" } });
   }
+  
 
   getBetween(start: Date, end: Date) {
     return this.holidayRepo.find({
@@ -27,5 +28,21 @@ export class HolidayService {
       },
     });
   }
+
+  async remove(id: number) {
+  const holiday = await this.holidayRepo.findOne({
+    where: { id },
+  });
+
+  if (!holiday) {
+    throw new Error("Holiday not found");
+  }
+
+  await this.holidayRepo.delete(id);
+
+  return {
+    message: "Holiday deleted successfully",
+  };
+}
 
 }

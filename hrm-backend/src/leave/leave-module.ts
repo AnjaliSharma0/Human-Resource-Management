@@ -1,12 +1,14 @@
 import { Module } from "@nestjs/common";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { Leave } from "./leave.entity";
-import { Employee } from "src/employee/entities/employee-entity";
+import { Employee } from "../employee/entities/employee-entity";
 import { LeaveService } from "./leave.service";
 import { LeaveController } from "./leave.controller";
 import { LeaveType } from "./holiday/leave-type";
 import { LeaveBalance } from "./holiday/leave-balance";
 import { Holiday } from "./holiday/holiday.entity";
+import { LeaveTypeController } from "./leave-type-controller";
+import { LeaveTypeService } from "./leave-type-service";
 
 @Module({
     imports:[TypeOrmModule.forFeature([
@@ -16,8 +18,8 @@ import { Holiday } from "./holiday/holiday.entity";
     LeaveBalance,
     Holiday
 ])],
-    providers:[LeaveService],
-    controllers:[LeaveController]
+    providers:[LeaveService, LeaveTypeService],
+    controllers:[LeaveController, LeaveTypeController]
 })
 
 export class LeaveModule{}

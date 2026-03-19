@@ -1,10 +1,10 @@
 import { BadRequestException, Injectable, UnauthorizedException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import { UserService } from "src/dto/users/users-service";
+import { UserService } from "../../dto/users/users-service";
 import bcrypt from "bcrypt"
-import { EmailService } from "src/employee/employee-invitation/email-service";
+import { EmailService } from "../../employee/employee-invitation/email-service";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Employee } from "src/employee/entities/employee-entity";
+import { Employee } from "../../employee/entities/employee-entity";
 import { Repository } from "typeorm";
 import { User } from "../users/user-entity.dto";
 @Injectable()
@@ -73,11 +73,14 @@ export class AuthService {
         if (!match) {
             throw new UnauthorizedException("Invalid expressions.")
         }
-
+  const employee = await this.employeeRepo.findOne({
+    where: { user: { id: user.id } },
+  });
         const payload = {
             id: user.id,
             email: user.email,
-            role: user.role
+            role: user.role,
+            employeeId: employee?.id
         }
         return {
             access_token: this.jwtService.sign(payload)

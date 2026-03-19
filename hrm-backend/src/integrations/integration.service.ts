@@ -1,28 +1,50 @@
-import { Injectable } from "@nestjs/common"
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
-export class IntegrationService{
+export class IntegrationsService {
+  private integrations = {
+    slack: false,
+    quickbooks: false,
+    lms: false,
+  };
 
-sendSlackNotification(message:string){
+  getAllStatus() {
+    return this.integrations;
+  }
 
-console.log("Slack message:",message)
+  // Slack OAuth URL
+  getSlackAuthUrl() {
+    return {
+      url: `https://slack.com/oauth/v2/authorize?client_id=YOUR_CLIENT_ID&scope=chat:write`,
+    };
+  }
 
-}
+  async handleSlackCallback(code: string) {
+    // TODO: Exchange code for token
+    console.log('Slack Code:', code);
 
-pushPayroll(){
+    this.integrations.slack = true;
 
-console.log("Push payroll to QuickBooks")
+    return { message: 'Slack Connected Successfully' };
+  }
 
-}
+  async syncPayroll() {
+    // Simulate bank API
+    return {
+      message: 'Payroll processed & sent to bank',
+    };
+  }
 
-syncEPFO(){
+  async exportEPFO() {
+    return {
+      message: 'EPFO file generated successfully',
+      fileUrl: '/downloads/epfo.csv',
+    };
+  }
 
-console.log("Sync employee data with EPFO")
-
-}
-
-syncGovernment(){
-    console.log('Sync govternment')
-}
-
+  async syncLMS() {
+    return {
+      message: 'Employees synced to LMS',
+    };
+  }
 }

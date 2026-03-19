@@ -1,4 +1,4 @@
-import { Employee } from "src/employee/entities/employee-entity";
+import { Employee } from "../employee/entities/employee-entity";
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
 
 

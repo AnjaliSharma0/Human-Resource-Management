@@ -1,22 +1,26 @@
-import { IsNotEmpty, IsDateString, IsString } from 'class-validator';
-import { FindOperator } from 'typeorm';
+import { IsNotEmpty, IsDateString, IsEnum, IsOptional } from 'class-validator';
 
 export class ApplyLeaveDto {
-
   @IsNotEmpty()
-  employeeId: number;
-
-   @IsNotEmpty()
-  leaveTypeId: number;
-
   @IsDateString()
   startDate: string;
 
+  @IsNotEmpty()
   @IsDateString()
   endDate: string;
 
-  duration: "full" | "first_half" | "second_half";
+  @IsNotEmpty()
+  leaveTypeId: number;
 
-  @IsString()
-  reason?: string
+  @IsOptional()
+  @IsEnum(['full', 'first_half', 'second_half'])
+  duration?: 'full' | 'first_half' | 'second_half';
+
+  @IsOptional()
+  reason?: string;
+}
+
+// Service type including employeeId
+export interface ApplyLeaveWithEmployeeId extends ApplyLeaveDto {
+  employeeId: number;
 }

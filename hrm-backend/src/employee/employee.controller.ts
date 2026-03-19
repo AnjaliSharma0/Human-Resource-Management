@@ -1,9 +1,9 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from "@nestjs/common";
-import { JwtAuthGuard } from "src/dto/auth/jwt-auth.guard";
+import { JwtAuthGuard } from "../dto/auth/jwt-auth.guard";
 import { EmployeeService } from "./employee.service";
 import { CreateEmployeeDto } from "./dto/create.employee.dto";
-import { Roles } from "src/common/decorators/role.decorator";
-import { RolesGaurd } from "src/common/guard/role.guard";
+import { Roles } from "../common/decorators/role.decorator";
+import { RolesGaurd } from "../common/guard/role.guard";
 import { EmployeeTeamDto } from "./dto/employee-team.dto";
 import { EmailService } from "./employee-invitation/email-service";
 
@@ -38,7 +38,7 @@ async create(@Body() body: CreateEmployeeDto) {
   };
 }
 @Get()
-@Roles("admin","manager","employee")
+// @Roles("admin","manager","employee")
 findAll(){
   return this.employeeService.findAll();
 }

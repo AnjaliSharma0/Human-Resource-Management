@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import api from "@/app/src/services/api";
 
@@ -15,8 +15,24 @@ dateOfBirth: employee.dateOfBirth?.slice(0,10) || "",
 gender: employee.gender || "Male",
 address: employee.address || "",
 joiningDate: employee.joiningDate?.slice(0,10) || "",
-status: employee.status || "Active"
+status: employee.status || "Active",
+ department: employee.department || "",
+  designation: employee.designation || ""
 });
+
+
+const [departments, setDepartments] = useState([]);
+const [designations, setDesignations] = useState([]);
+
+useEffect(() => {
+  const fetchData = async () => {
+    const depRes = await api.get("/departments");
+    const desRes = await api.get("/designations");
+    setDepartments(depRes.data);
+    setDesignations(desRes.data);
+  };
+  fetchData();
+}, []);
 
 const handleChange = (e:any)=>{
 setForm({
@@ -148,6 +164,30 @@ onChange={handleChange}
 className="border p-2 rounded col-span-2"
 placeholder="Address"
 />
+
+<select
+  name="department"
+  value={form.department}
+  onChange={handleChange}
+  className="border p-2 rounded"
+>
+  <option value="">Select Department</option>
+  {departments.map((d:any) => (
+    <option key={d.id} value={d.id}>{d.name}</option>
+  ))}
+</select>
+
+<select
+  name="designation"
+  value={form.designation}
+  onChange={handleChange}
+  className="border p-2 rounded"
+>
+  <option value="">Select Designation</option>
+  {designations.map((d:any) => (
+    <option key={d.id} value={d.id}>{d.title}</option>
+  ))}
+</select>
 
 </div>
 

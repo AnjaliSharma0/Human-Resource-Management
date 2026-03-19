@@ -1,95 +1,75 @@
-// "use client";
-
-// import LeaveTable from "@/app/components/leave/LeaveTable";
-// import { leaveApi } from "@/app/src/services/leave";
-// import { useEffect, useState } from "react";
-// import toast from "react-hot-toast";
-
-// export default function LeaveManagePage() {
-//   const [leaves, setLeaves] = useState<any[]>([]);
-//   const [role, setRole] = useState<string>("employee");
-
-//   useEffect(() => {
-//     const storedRole = localStorage.getItem("role");
-//     if (storedRole) setRole(storedRole);
-
-//     fetchLeaves();
-//   }, []);
-
-//   const fetchLeaves = async () => {
-//     try {
-//       const res = await leaveApi.getAllLeaves();
-//       setLeaves(res.data);
-//     } catch (err) {
-//       console.error(err);
-//     }
-//   };
-
-//   const handleStatus = async (id: number, status: "Approved" | "Rejected") => {
-//     try {
-//       await leaveApi.updateLeaveStatus(id, status);
-//       toast.success(`Leave ${status.toLowerCase()}!`);
-//       fetchLeaves();
-//     } catch (err: any) {
-//       toast.error(err.response?.data?.message || "Error updating status");
-//     }
-//   };
-
-//   // Only manager/admin can see this page
-//   if (role === "employee") return <p className="p-6 text-red-500">Access denied</p>;
-
-//   return (
-//     <div className="p-6">
-//       <h2 className="text-xl font-semibold mb-4">Manage Leaves</h2>
-//       <LeaveTable
-//         leaves={leaves}
-//         showActions={true} // manager/admin can approve/reject
-//         onAction={handleStatus}
-//       />
-//     </div>
-//   );
-// }
-
-
-
 "use client";
 
 import { useEffect, useState } from "react";
 import Calendar from "react-calendar";
-import 'react-calendar/dist/Calendar.css';
+import "react-calendar/dist/Calendar.css";
 import { leaveApi } from "@/app/src/services/leave";
-import LeaveTable from "@/app/components/leave/LeaveTable";
 import toast from "react-hot-toast";
+import LeaveTable from "@/app/components/leave/LeaveTable";
+import HolidayPage from "@/app/components/leave/LeaveCreate";
+import LeaveBalanceAdmin from "@/app/components/leave/LeaveAdminBalance";
+import LeaveTypeAdmin from "@/app/components/leave/LeaveType";
 
 interface Event {
   id: string | number;
+  leaveId?: number;
   date: string;
   type: "holiday" | "leave";
-  leaveStatus?: "Pending" | "Approved" | "Rejected";
+  leaveStatus?: "pending" | "approved" | "rejected";
   leaveType?: string;
   employee?: { firstName: string; lastName?: string };
-  name?: string; // holiday name
+  name?: string;
   reason?: string;
 }
 
 export default function LeaveCalendarPage() {
+  const [leaves, setLeaves] = useState<any[]>([]);
   const [events, setEvents] = useState<Event[]>([]);
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [role, setRole] = useState<string | null>(null);
-  const [isClient, setIsClient] = useState(false);
+  const [selectedLeave, setSelectedLeave] = useState<Event | null>(null);
+  const [mounted, setMounted] = useState(false);
+
+  const [tab, setTab] = useState("calendar");
+
+  const [stats, setStats] = useState({
+    pending: 0,
+    approved: 0,
+    rejected: 0,
+    total: 0,
+  });
+
+  const [employeeFilter, setEmployeeFilter] = useState("");
+  const [typeFilter, setTypeFilter] = useState("");
+
+  const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
-    const storedRole = localStorage.getItem("role");
-    if (storedRole) setRole(storedRole);
-
+    setMounted(true);
     fetchEvents();
+    fetchLeaves();
   }, []);
+
+  const fetchLeaves = async () => {
+    try {
+      const res = await leaveApi.getAllLeaves();
+      const data = res.data || [];
+
+      setLeaves(data);
+
+      setStats({
+        total: data.length,
+        pending: data.filter((l: any) => l.status === "pending").length,
+        approved: data.filter((l: any) => l.status === "approved").length,
+        rejected: data.filter((l: any) => l.status === "rejected").length,
+      });
+    } catch {
+      toast.error("Failed to fetch leaves");
+    }
+  };
 
   const fetchEvents = async () => {
     try {
-      // fetch holidays
       const holidayRes = await leaveApi.getHoliday();
+
       const holidays: Event[] = (holidayRes.data || []).map((h: any) => ({
         id: h.id,
         type: "holiday",
@@ -97,136 +77,258 @@ export default function LeaveCalendarPage() {
         name: h.name,
       }));
 
-      // fetch leaves for admin/manager
       const leaveRes = await leaveApi.getAllLeaves();
-      const leaves: Event[] = (leaveRes.data || []).flatMap((l: any) => {
-        const employee = {
-          firstName: l.employee?.firstName || `Employee ${l.employeeId}`,
-          lastName: l.employee?.lastName || "",
-        };
-        const leaveTypeName = l.leaveType?.name || "Leave";
-        const leaveStatus = l.status || "Pending";
 
+      const leaves: Event[] = (leaveRes.data || []).flatMap((l: any) => {
         const start = new Date(l.startDate);
         const end = new Date(l.endDate);
+
         const days: Event[] = [];
+
         for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-          // create unique id per day
           days.push({
-            id: l.id + "-" + d.getDate(),
+            id: `${l.id}-${d.getTime()}`,
+            leaveId: l.id,
             type: "leave",
             date: new Date(d).toISOString(),
-            leaveType: leaveTypeName,
-            leaveStatus,
-            employee,
+            leaveType: l.leaveType?.name || "Leave",
+            leaveStatus: l.status || "pending",
+            employee: {
+              firstName: l.employee?.firstName || "Employee",
+              lastName: l.employee?.lastName || "",
+            },
             reason: l.reason,
           });
         }
+
         return days;
       });
 
       setEvents([...holidays, ...leaves]);
-    } catch (err) {
-      console.error(err);
+    } catch {
+      toast.error("Failed to fetch events");
       setEvents([]);
     }
   };
 
-  if (!isClient) return null;
+  const approveLeave = async () => {
+    if (!selectedLeave?.leaveId || actionLoading) return;
+
+    try {
+      setActionLoading(true);
+      await leaveApi.updateLeaveStatus(selectedLeave.leaveId, "approved");
+      toast.success("Leave Approved");
+
+      setSelectedLeave((prev) =>
+        prev ? { ...prev, leaveStatus: "approved" } : null
+      );
+
+      fetchEvents();
+      fetchLeaves();
+    } catch {
+      toast.error("Failed to approve leave");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const rejectLeave = async () => {
+    if (!selectedLeave?.leaveId || actionLoading) return;
+
+    try {
+      setActionLoading(true);
+      await leaveApi.updateLeaveStatus(selectedLeave.leaveId, "rejected");
+      toast.success("Leave Rejected");
+
+      setSelectedLeave((prev) =>
+        prev ? { ...prev, leaveStatus: "rejected" } : null
+      );
+
+      fetchEvents();
+      fetchLeaves();
+    } catch {
+      toast.error("Failed to reject leave");
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   const tileContent = ({ date, view }: any) => {
     if (view !== "month") return null;
 
-    const dayEvents = events.filter(
-      (e) => new Date(e.date).toDateString() === date.toDateString()
-    );
+    const dayEvents = events.filter((e) => {
+      const sameDay =
+        new Date(e.date).toDateString() === date.toDateString();
+
+      const employeeMatch = e.employee?.firstName
+        ?.toLowerCase()
+        .includes(employeeFilter.toLowerCase());
+
+      const typeMatch = e.leaveType
+        ?.toLowerCase()
+        .includes(typeFilter.toLowerCase());
+
+      return sameDay && employeeMatch && typeMatch;
+    });
 
     if (!dayEvents.length) return null;
 
     return (
-      <div className="flex flex-col items-center text-xs mt-1 space-y-0.5">
+      <div className="flex flex-wrap justify-center gap-1 mt-1 text-[10px]">
         {dayEvents.map((e) => {
           if (e.type === "holiday") {
             return (
               <span
                 key={e.id}
-                className="px-1 rounded text-white bg-red-500 text-center"
+                className="px-1 rounded text-white bg-blue-500"
                 title={e.name}
               >
-                🎉 {e.name}
-              </span>
-            );
-          } else {
-            const color =
-              e.leaveStatus === "Approved"
-                ? "bg-green-500"
-                : e.leaveStatus === "Pending"
-                  ? "bg-yellow-400"
-                  : "bg-red-500";
-
-            return (
-              <span
-                key={e.id}
-                className={`px-1 rounded text-white ${color} cursor-pointer hover:scale-110 transition-transform`}
-                title={`${e.leaveType} - ${e.leaveStatus} - ${e.employee?.firstName} ${e.employee?.lastName}\nReason: ${e.reason}`}
-                onClick={() => role !== "employee" && setSelectedDate(new Date(e.date))}
-              >
-                {e.leaveType?.[0] || "L"}
+                🎉
               </span>
             );
           }
+
+          const color =
+            e.leaveStatus === "approved"
+              ? "bg-green-500"
+              : e.leaveStatus === "pending"
+              ? "bg-yellow-400"
+              : "bg-red-500";
+
+          return (
+            <span
+              key={e.id}
+              className={`px-1 rounded text-white ${color} cursor-pointer`}
+              onClick={() => setSelectedLeave(e)}
+            >
+              {e.employee?.firstName?.[0]}
+            </span>
+          );
         })}
       </div>
     );
   };
 
-  const selectedEvents = selectedDate
-    ? events.filter(
-      (e) =>
-        new Date(e.date).toDateString() === selectedDate.toDateString() &&
-        e.type === "leave"
-    )
-    : [];
+  if (!mounted) return null;
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-semibold mb-4">Leave Calendar</h2>
+    <div className="p-4 sm:p-6 md:p-8 max-w-[1400px] mx-auto">
 
-      <Calendar
-        tileContent={tileContent}
-        onClickDay={(value) => role !== "employee" && setSelectedDate(value)}
-      />
+      <h2 className="text-xl sm:text-2xl font-semibold mb-4">
+        Leave Management
+      </h2>
 
-      {selectedDate && selectedEvents.length > 0 && role !== "employee" && (
-        <div className="mt-6 p-4 border rounded shadow-lg bg-white dark:bg-gray-800">
-          <h3 className="font-semibold mb-3">
-            Leaves on {selectedDate.toDateString()}
-          </h3>
-          <LeaveTable
-            leaves={selectedEvents.map((e) => ({
-              id: e.id,
-              employee: e.employee,
-              leaveType: { name: e.leaveType },
-              startDate: e.date,
-              endDate: e.date,
-              status: e.leaveStatus,
-              reason: e.reason,
-            }))}
-            showActions={true}
-            onAction={async (id, status) => {
-              try {
-                // convert to string first
-                const originalId = id.toString().split("-")[0];
-                await leaveApi.updateLeaveStatus(Number(originalId), status);
-                toast.success(`Leave ${status.toLowerCase()}!`);
-                await fetchEvents(); // refresh calendar
-              } catch {
-                toast.error("Failed to update leave");
-              }
-            }}
-          />
+      {/* Tabs */}
+      <div className="flex gap-2 overflow-x-auto pb-2 mb-6">
+        {["calendar", "leaveStats", "applications", "leaveTypes", "balance", "holidays"].map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`px-3 py-2 rounded whitespace-nowrap text-sm ${
+              tab === t ? "bg-blue-600 text-white" : "bg-gray-200"
+            }`}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+
+      {/* Calendar */}
+      {tab === "calendar" && (
+        <div className="bg-white p-4 rounded-xl shadow overflow-x-auto">
+          <div className="flex flex-col sm:flex-row gap-3 mb-4">
+            <input
+              placeholder="Filter by employee"
+              value={employeeFilter}
+              onChange={(e) => setEmployeeFilter(e.target.value)}
+              className="border p-2 rounded w-full"
+            />
+            <input
+              placeholder="Filter by leave type"
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              className="border p-2 rounded w-full"
+            />
+          </div>
+
+          <Calendar tileContent={tileContent} />
         </div>
       )}
+
+      {/* Stats */}
+      {tab === "leaveStats" && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <Stat title="Total" value={stats.total} />
+            <Stat title="Pending" value={stats.pending} bg="bg-yellow-100" />
+            <Stat title="Approved" value={stats.approved} bg="bg-green-100" />
+            <Stat title="Rejected" value={stats.rejected} bg="bg-red-100" />
+          </div>
+        </div>
+      )}
+
+      {/* Applications */}
+      {tab === "applications" && (
+        <div className="overflow-x-auto">
+          <LeaveTable leaves={leaves} showActions />
+        </div>
+      )}
+
+      {/* Others */}
+      {tab === "leaveTypes" && <LeaveTypeAdmin />}
+      {tab === "balance" && <LeaveBalanceAdmin />}
+      {tab === "holidays" && <HolidayPage />}
+
+      {/* Modal */}
+      {selectedLeave && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
+          <div className="bg-white p-6 rounded-xl w-full max-w-md">
+
+            <h3 className="font-semibold mb-3">Leave Request</h3>
+
+            <p><b>Employee:</b> {selectedLeave.employee?.firstName}</p>
+            <p><b>Type:</b> {selectedLeave.leaveType}</p>
+            <p><b>Status:</b> {selectedLeave.leaveStatus}</p>
+
+            <div className="flex flex-wrap gap-2 mt-4">
+
+              {selectedLeave.leaveStatus === "pending" && (
+                <>
+                  <button
+                    onClick={approveLeave}
+                    className="bg-green-500 text-white px-3 py-1 rounded w-full sm:w-auto"
+                  >
+                    Approve
+                  </button>
+                  <button
+                    onClick={rejectLeave}
+                    className="bg-red-500 text-white px-3 py-1 rounded w-full sm:w-auto"
+                  >
+                    Reject
+                  </button>
+                </>
+              )}
+
+              <button
+                onClick={() => setSelectedLeave(null)}
+                className="ml-auto text-gray-500"
+              >
+                Close
+              </button>
+
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Stat({ title, value, bg }: any) {
+  return (
+    <div className={`${bg || "bg-white"} p-4 rounded shadow`}>
+      <p className="text-sm">{title}</p>
+      <h2 className="text-xl font-bold">{value}</h2>
     </div>
   );
 }

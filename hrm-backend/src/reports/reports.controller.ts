@@ -1,24 +1,30 @@
-import { Controller, Get } from "@nestjs/common"
-import { ReportsService } from "./reports.service"
+import { Controller, Get, Req, UseGuards } from "@nestjs/common";
+import { ReportsService } from "./reports.service";
+import { Request } from "express";
+import { JwtAuthGuard } from "src/dto/auth/jwt-auth.guard";
 
+
+interface AuthRequest extends Request {
+  user: { id: number }; // define the user object your JWT guard adds
+}
+
+@UseGuards(JwtAuthGuard)
 @Controller("reports")
-export class ReportsController{
+export class ReportsController {
+  constructor(private service: ReportsService) {}
 
-constructor(private service:ReportsService){}
+  @Get("attendance")
+  async attendance(@Req() req: AuthRequest) {
+    return this.service.attendanceReport(req.user.id);
+  }
 
-@Get("attendance")
-attendance(){
-return this.service.attendanceReport()
-}
+  @Get("leave")
+  async leave(@Req() req: AuthRequest) {
+    return this.service.leaveReport(req.user.id);
+  }
 
-@Get("leave")
-leave(){
-return this.service.leaveReport()
-}
-
-@Get("payroll")
-payroll(){
-return this.service.payrollReport()
-}
-
+  @Get("payroll")
+  async payroll(@Req() req: AuthRequest) {
+    return this.service.payrollReport(req.user.id);
+  }
 }

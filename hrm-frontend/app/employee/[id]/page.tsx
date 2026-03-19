@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import api from "@/app/src/services/api";
 import { useParams } from "next/navigation"; // useParams to get route params
+import Loading from "@/app/components/Loading";
 
 export default function EmployeeCard() {
   const params = useParams();
@@ -27,7 +28,7 @@ export default function EmployeeCard() {
     loadProfile();
   }, [employeeId]);
 
-  if (loading) return <p className="p-6 text-gray-500">Loading profile...</p>;
+  if (loading) return <Loading message="Loading profile..." size="lg"/>
   if (!profile) return <p className="p-6 text-red-500">Profile not found</p>;
 
   return (

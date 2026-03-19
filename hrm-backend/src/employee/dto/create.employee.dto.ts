@@ -1,4 +1,5 @@
 import { IsString, IsEmail, IsDateString, IsOptional, IsNumber } from "class-validator";
+import { Role } from "src/dto/users/user.role";
 
 export class CreateEmployeeDto {
 
@@ -32,6 +33,8 @@ export class CreateEmployeeDto {
   @IsNumber()
   designationId: number;
 
+  @IsOptional() @IsNumber() salaryGradeId?: number; // New
+  @IsOptional() role?: Role; // EMPLOYEE or MANAGER
   @IsOptional()
   @IsNumber()
   managerId?: number;

@@ -1,53 +1,55 @@
-import {
-  Controller,
-  Post,
-  Get,
-  Put,
-  Body,
-  Param,
-  UseGuards,
-  Request,
-} from "@nestjs/common";
 
+
+import { Controller, Post, Get, Put, Body, Param, UseGuards, Request, ValidationPipe } from "@nestjs/common";
 import { LeaveService } from "./leave.service";
 import { ApplyLeaveDto } from "./dto/leave.dto";
-import { JwtAuthGuard } from "src/dto/auth/jwt-auth.guard";
-
+import { JwtAuthGuard } from "../dto/auth/jwt-auth.guard";
+import { CreateLeaveBalanceDto } from "./dto/create-balanceLeave.dto";
 
 @Controller("leave")
 @UseGuards(JwtAuthGuard)
 export class LeaveController {
-  constructor(private readonly leaveService: LeaveService) {}
+  constructor(private leaveService: LeaveService) {}
 
-  // Employee applies leave
+  // Apply leave (employeeId from JWT)
   @Post()
-  applyLeave(@Body() dto: ApplyLeaveDto) {
-    return this.leaveService.applyLeave(dto);
+  applyLeave(@Request() req, @Body() dto: ApplyLeaveDto) {
+    const employeeId = req.user.id;
+    return this.leaveService.applyLeave({ ...dto, employeeId });
   }
 
-  // Admin / Manager view all leave requests
+  // Admin view all leaves
   @Get()
   findAll() {
     return this.leaveService.findAll();
   }
 
-  // Employee view their leave history
+  // Employee leave history
   @Get("employee/:id")
   getEmployeeLeaves(@Param("id") id: number) {
-    return this.leaveService.getEmployeeLeaves(+id);
+    return this.leaveService.getEmployeeLeaves(id);
   }
 
-  // Admin / Manager approve or reject leave
+  // Admin approve/reject
   @Put(":id/status")
-  updateStatus(
-    @Param("id") id: number,
-    @Body() body: { status: "approved" | "rejected" },
-  ) {
-    return this.leaveService.updateStatus(+id, body.status);
+  updateStatus(@Param("id") id: number, @Body() body: { status: string }) {
+    return this.leaveService.updateStatus(id, body.status.toLowerCase() as "approved" | "rejected");
   }
 
   @Get("calendar")
-getCalendar() {
-  return this.leaveService.getLeaveCalendar();
+  getCalendar() {
+    return this.leaveService.getLeaveCalendar();
+  }
+
+
+@Post("balance")
+createBalance(@Body() dto: CreateLeaveBalanceDto) {
+  return this.leaveService.createLeaveBalance(dto);
 }
+
+@Get("balance/:employeeId")
+getBalance(@Param("employeeId") employeeId: number) {
+  return this.leaveService.getEmployeeBalance(employeeId);
+}
+
 }

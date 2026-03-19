@@ -4,7 +4,7 @@ import { PerformanceService } from "./performance.service";
 import { PerformanceController } from "./performance.controller";
 import { Review } from "./review.entity";
 import { Goal } from "./goal.entity";
-import { Employee } from "src/employee/entities/employee-entity";
+import { Employee } from "../employee/entities/employee-entity";
 
 
 @Module({

@@ -1,5 +1,5 @@
 import { InjectRepository } from "@nestjs/typeorm";
-import { User } from "src/dto/users/user-entity.dto";
+import { User } from "../../dto/users/user-entity.dto";
 import { Repository } from "typeorm";
 
 export class UserService{

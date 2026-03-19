@@ -14,14 +14,20 @@ import { AttendanceModule } from './attendance/attendance.module';
 import { LeaveModule } from './leave/leave-module';
 import { ExpenseModule } from './expenses/expenses.module';
 import { IntegrationModule } from './integrations/integration-module';
-import { OnbordingModule } from './onbording/onbording.mdule';
-import { OrgModule } from './org-structure/org-module';
+
 import { PayrollModule } from './payroll/payroll-module';
 import { PerformanceModule } from './performance/performance-module';
-import { RecruitmentModule } from './recruitment/recruitment-module';
 import { ReportsModule } from './reports/reports-module';
 import { TrainingModule } from './training/training.module';
 import { HolidayModule } from './leave/holiday/holiday-module';
+import { OfferLetterModule } from './recruitment/offer-letter-module';
+import { JobPostingModule } from './recruitment/job-posting-module';
+import { InterviewModule } from './recruitment/interview-module';
+import { CandidateModule } from './recruitment/candidate-module';
+import { JobRequisitionModule } from './recruitment/job-requisition-module';
+import { HrModule } from './onbording/onbording.mdule';
+import { OrgStructureModule } from './org-structure/org-module';
+import { HelpdeskModule } from './helpdesk/helpdesk.module';
 
 
 @Module({
@@ -50,16 +56,24 @@ import { HolidayModule } from './leave/holiday/holiday-module';
     LeaveModule,
     ExpenseModule,
     IntegrationModule,
-    OnbordingModule,
-    OrgModule,
+    HrModule,
+    OrgStructureModule,
     PayrollModule,
     PerformanceModule,
-    RecruitmentModule,
     ReportsModule,
     TrainingModule,
-    HolidayModule
+    HolidayModule,
+    OfferLetterModule,
+    JobPostingModule,
+    InterviewModule,
+    CandidateModule,
+    JobRequisitionModule,
+    HelpdeskModule
+    
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
+
+

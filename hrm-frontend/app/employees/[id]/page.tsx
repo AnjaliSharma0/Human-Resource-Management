@@ -1,5 +1,6 @@
 "use client";
 
+import Loading from "@/app/components/Loading";
 import ContactsTab from "@/app/components/profileTabs/ContactTab";
 import DocumentsTab from "@/app/components/profileTabs/DocumentTab";
 import HistoryTab from "@/app/components/profileTabs/HistoryTab";
@@ -16,7 +17,7 @@ const [tab,setTab] = useState("profile");
 const employeeId = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
 
-  if (!employeeId) return <p>Loading employee...</p>; // avoid undefined
+  if (!employeeId) return <Loading message="Loading employees..." size="lg"/> // avoid undefined
 
 
 return(

@@ -1,24 +1,38 @@
-import { Body, Controller, Post } from "@nestjs/common"
-import { IntegrationService } from "./integration.service"
+import { Controller, Get, Post, Query, Body } from '@nestjs/common';
+import { IntegrationsService } from './integration.service';
 
-@Controller("integrations")
-export class IntegrationsController{
 
-constructor(private service:IntegrationService){}
+@Controller('integrations')
+export class IntegrationsController {
+  constructor(private readonly service: IntegrationsService) {}
 
-@Post("slack")
-sendSlack(@Body() body){
-return this.service.sendSlackNotification(body.message)
-}
+  @Get('status')
+  getStatus() {
+    return this.service.getAllStatus();
+  }
 
-@Post("payroll-sync")
-syncPayroll(){
-return this.service.pushPayroll()
-}
+  @Get('slack/auth')
+  redirectToSlack() {
+    return this.service.getSlackAuthUrl();
+  }
 
-@Post("government-sync")
-syncGov(){
-return this.service.syncGovernment()
-}
+  @Get('slack/callback')
+  slackCallback(@Query('code') code: string) {
+    return this.service.handleSlackCallback(code);
+  }
 
+  @Post('payroll/sync')
+  syncPayroll() {
+    return this.service.syncPayroll();
+  }
+
+  @Post('epfo/export')
+  exportEPFO() {
+    return this.service.exportEPFO();
+  }
+
+  @Post('lms/sync')
+  syncLMS() {
+    return this.service.syncLMS();
+  }
 }

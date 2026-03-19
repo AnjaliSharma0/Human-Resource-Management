@@ -1,11 +1,10 @@
-import { IsNotEmpty } from "class-validator";
+import { IsString, IsNotEmpty, IsDate, IsBoolean } from "class-validator";
 
-export class CreateCourseDto {
-
-  @IsNotEmpty()
-  title: string;
-
-  @IsNotEmpty()
-  description: string;
-
+export class CreateTrainingCourseDto {
+  @IsString() @IsNotEmpty() title: string;
+  @IsString() @IsNotEmpty() description: string;
+  @IsDate() startDate: Date;
+  @IsDate() endDate: Date;
+  @IsBoolean() isSelfPaced: boolean;
+   skills: number[];
 }

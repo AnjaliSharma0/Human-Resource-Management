@@ -3,7 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm"
 import { Goal } from "./goal.entity"
 import { Repository } from "typeorm"
 import { Review } from "./review.entity"
-import { Employee } from "src/employee/entities/employee-entity"
+import { Employee } from "../employee/entities/employee-entity"
 
 @Injectable()
 export class PerformanceService {

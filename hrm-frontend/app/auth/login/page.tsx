@@ -26,33 +26,27 @@ export default function LoginPage() {
   const [email,setEmail] = useState("");
   const [password,setPassword] = useState("");
 
-  
+
+
 const handleLogin = async () => {
   try {
-
-    const res = await loginUser({
-      email,
-      password
-    });
-
+    const res = await loginUser({ email, password });
     const token = res.access_token;
 
     // decode JWT
-    const decoded: TokenPayload = jwtDecode(token);
+    const decoded = jwtDecode<TokenPayload>(token);
 
     // store values
     localStorage.setItem("token", token);
     localStorage.setItem("role", decoded.role);
+    localStorage.setItem("userId", decoded.id.toString()); // store as string
 
     toast.success("Login successful 🎉");
 
     // redirect by role
     router.push(redirectByRole(decoded.role));
-
-  } catch(err) {
-
+  } catch (err) {
     toast.error("Invalid credentials");
-
   }
 };
 

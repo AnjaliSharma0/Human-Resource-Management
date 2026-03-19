@@ -6,11 +6,11 @@ import { PassportModule } from "@nestjs/passport";
 import { JwtModule } from "@nestjs/jwt";
 import { UserModule } from "../users/user.module";
 import { ConfigModule, ConfigService } from "@nestjs/config";
-import { EmailModule } from "src/employee/employee-invitation/email-module.dto";
+import { EmailModule } from "../../employee/employee-invitation/email-module.dto";
 import { UserService } from "../users/users-service";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { User } from "../users/user-entity.dto";
-import { Employee } from "src/employee/entities/employee-entity";
+import { Employee } from "../../employee/entities/employee-entity";
 
 @Module({
     imports:[TypeOrmModule.forFeature([User , Employee]),

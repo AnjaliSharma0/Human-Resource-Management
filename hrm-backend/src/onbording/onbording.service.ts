@@ -1,43 +1,111 @@
-import { Injectable } from "@nestjs/common"
-import { InjectRepository } from "@nestjs/typeorm"
-import { Repository } from "typeorm"
-import { OnboardingTask } from "./onboarding.entity"
-import { Employee } from "src/employee/entities/employee-entity"
+import { Injectable, BadRequestException } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Repository } from "typeorm";
+
+// Entities
+import { Onboarding } from "./entity/onboarding.entity";
+import { Orientation } from "./entity/orientation.entity";
+import { PreJoiningDoc } from "./entity/pre-joining-doc.entity";
+import { Checklist } from "./entity/chceklist.entity";
 
 @Injectable()
 export class OnboardingService {
-
   constructor(
-    @InjectRepository(OnboardingTask)
-    private repo: Repository<OnboardingTask>,
+    @InjectRepository(Onboarding)
+    private onboardingRepo: Repository<Onboarding>,
 
-    @InjectRepository(Employee)
-    private userRepo: Repository<Employee>
+    @InjectRepository(PreJoiningDoc)
+    private docRepo: Repository<PreJoiningDoc>,
+
+    @InjectRepository(Checklist)
+    private checklistRepo: Repository<Checklist>,
+
+    @InjectRepository(Orientation)
+    private orientationRepo: Repository<Orientation>,
   ) {}
 
-  async createTask(employeeId: number, taskName: string) {
+  // =========================
+  // 🧾 ONBOARDING
+  // =========================
+  async create(dto: Partial<Onboarding>) {
+    return this.onboardingRepo.save(dto);
+  }
 
-    const employee = await this.userRepo.findOne({
-      where: { id: employeeId }
+  async findAll() {
+    return this.onboardingRepo.find({
+      relations: ["employee"], // keep if relation exists
     });
+  }
 
-    if (!employee) {
-      throw new Error("Employee not found");
+  async updateStatus(id: number, status: string) {
+    return this.onboardingRepo.update(id, { status });
+  }
+
+  // =========================
+  // 📄 DOCUMENTS
+  // =========================
+  async uploadDocument(dto: {
+    employeeId: number;
+    documentName: string;
+    fileUrl: string;
+    documentType: string;
+  }) {
+    const { employeeId, fileUrl, documentName, documentType } = dto;
+
+    if (!employeeId || !fileUrl || !documentName || !documentType) {
+      throw new BadRequestException(
+        "Missing required fields: employeeId, documentName, fileUrl, documentType",
+      );
     }
 
-    const task = this.repo.create({
-      employee,
-      taskName
+    // Save document
+    return this.docRepo.save({
+      employeeId,
+      documentName,
+      fileUrl,
+      documentType,
+      isVerified: false, // default false
     });
-
-    return this.repo.save(task);
   }
 
-  getTasks() {
-    return this.repo.find({ relations: ["employee"] });
+  async getDocuments(employeeId?: number) {
+    if (employeeId) {
+      return this.docRepo.find({ where: { employeeId } });
+    }
+    return this.docRepo.find();
   }
 
-  completeTask(id: number) {
-    return this.repo.update(id, { completed: true });
+  async approveDocument(id: number) {
+    return this.docRepo.update(id, { isVerified: true });
+  }
+
+  async deleteDocument(id: number) {
+    return this.docRepo.delete(id);
+  }
+
+  // =========================
+  // ✅ CHECKLIST
+  // =========================
+  async createChecklist(dto: Partial<Checklist>) {
+    return this.checklistRepo.save(dto);
+  }
+
+  async getChecklist() {
+    return this.checklistRepo.find();
+  }
+
+  async updateChecklist(id: number, completed: boolean) {
+    return this.checklistRepo.update(id, { completed });
+  }
+
+  // =========================
+  // 📅 ORIENTATION
+  // =========================
+  async createOrientation(dto: Partial<Orientation>) {
+    return this.orientationRepo.save(dto);
+  }
+
+  async getOrientation() {
+    return this.orientationRepo.find();
   }
 }

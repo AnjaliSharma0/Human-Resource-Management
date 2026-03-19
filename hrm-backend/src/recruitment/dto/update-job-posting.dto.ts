@@ -1,0 +1,5 @@
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateJobPostingDto } from './job-posting.dto';
+
+
+export class UpdateJobPostingDto extends PartialType(CreateJobPostingDto) {}

@@ -7,6 +7,7 @@ import DocumentsTab from "@/app/components/profileTabs/DocumentTab";
 import ContactsTab from "@/app/components/profileTabs/ContactTab";
 import HistoryTab from "@/app/components/profileTabs/HistoryTab";
 import { UserCircleIcon } from "@heroicons/react/24/solid";
+import Loading from "@/app/components/Loading";
 
 export default function EmployeeDashboard() {
   const [myInfo, setMyInfo] = useState<any>(null);
@@ -30,7 +31,7 @@ export default function EmployeeDashboard() {
     fetchData();
   }, []);
 
-  if (loading) return <p className="p-6 text-gray-600">Loading dashboard...</p>;
+ if (loading) return <Loading message="Loading..." size="lg"/>
   if (!myInfo) return <p className="p-6 text-red-500">Could not fetch employee info</p>;
 
   return (
@@ -70,29 +71,6 @@ export default function EmployeeDashboard() {
         </div>
       </div>
 
-      {/* --- Department Colleagues --- */}
-      <div>
-        <h2 className="text-xl font-bold mb-4">Your Colleagues</h2>
-        {departmentEmployees.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {departmentEmployees.map(emp => (
-              <div key={emp.id} className="bg-white p-4 rounded-xl shadow hover:shadow-lg transition cursor-pointer">
-                <div className="flex items-center space-x-4">
-                  <UserCircleIcon className="h-12 w-12 text-gray-400" />
-                  <div>
-                    <h3 className="font-semibold">{emp.firstName} {emp.lastName}</h3>
-                    <p className="text-sm text-gray-500">{emp.designation}</p>
-                  </div>
-                </div>
-                <p className="text-sm text-gray-400 mt-2">{emp.email}</p>
-                {emp.department && <p className="text-sm text-gray-400">{emp.department}</p>}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-gray-500">No other employees in your department.</p>
-        )}
-      </div>
     </div>
   );
 }

@@ -13,7 +13,7 @@ interface Event {
   id: string | number;
   date: string;
   type: "holiday" | "leave";
-  leaveStatus?: "Pending" | "Approved" | "Rejected";
+  leaveStatus?: "pending" | "approved" | "rejected";
   leaveType?: string;
   employee?: { firstName: string; lastName?: string };
   name?: string; // holiday name
@@ -52,8 +52,8 @@ export default function LeaveCalendarPage() {
           firstName: l.employee?.firstName || `Employee ${l.employeeId}`,
           lastName: l.employee?.lastName || "",
         };
-        const leaveTypeName = l.leaveType?.name || "Leave";
-        const leaveStatus = l.status || "Pending";
+        const leaveTypeName = l.leaveType?.name;
+        const leaveStatus = l.status || "pending";
 
         const start = new Date(l.startDate);
         const end = new Date(l.endDate);
@@ -106,9 +106,9 @@ export default function LeaveCalendarPage() {
             );
           } else {
             const color =
-              e.leaveStatus === "Approved"
+              e.leaveStatus === "approved"
                 ? "bg-green-500"
-                : e.leaveStatus === "Pending"
+                : e.leaveStatus === "pending"
                   ? "bg-yellow-400"
                   : "bg-red-500";
 

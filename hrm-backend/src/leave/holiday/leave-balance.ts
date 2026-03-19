@@ -1,6 +1,8 @@
-import { Employee } from 'src/employee/entities/employee-entity';
+import { Employee } from '../../employee/entities/employee-entity';
 import { Entity, PrimaryGeneratedColumn, ManyToOne, Column } from 'typeorm';
 import { LeaveType } from './leave-type';
+import { Type } from 'class-transformer';
+import { IsNumber } from 'class-validator';
 
 
 @Entity('leave_balance')
@@ -19,8 +21,8 @@ export class LeaveBalance {
    @Column()
   year: number;
 
-  @Column({ default: 0 })
-  accrued: number;
+  @Column()
+ accrued: number;
 
   @Column({ default: 0 })
   used: number;

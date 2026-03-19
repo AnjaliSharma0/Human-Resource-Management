@@ -1,0 +1,25 @@
+{
+    "sqltools.connections": [
+        {
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5434,
+            "driver": "PostgreSQL",
+            "name": "postgres",
+            "database": "hr-data",
+            "username": "postgres"
+        },
+        {
+            "ssh": "Disabled",
+            "previewLimit": 50,
+            "server": "localhost",
+            "port": 5434,
+            "askForPassword": true,
+            "driver": "CockroachDB",
+            "name": "postgres",
+            "database": "hr-data",
+            "username": "postgres"
+        }
+    ]
+}
