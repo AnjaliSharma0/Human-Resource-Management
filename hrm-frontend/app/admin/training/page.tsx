@@ -520,8 +520,8 @@ export default function TrainingDashboard() {
     <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
 
       {/* HEADER */}
-      <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-gray-800">
-        Training Dashboard
+      <h1 className="text-2xl sm:text-3xl  text-center font-bold mb-6 text-gray-800">
+         Create course and  enroll Dashboard
       </h1>
 
       {/* TABS */}
@@ -575,13 +575,13 @@ export default function TrainingDashboard() {
                 </div>
 
                 <div className="flex justify-end gap-3 mt-4">
-                  <Edit
+                  {/* <Edit
                     className="cursor-pointer text-blue-500 hover:text-blue-600 transition"
                     onClick={() => {
                       setEditingCourse(course);
                       setModalOpen(true);
                     }}
-                  />
+                  /> */}
                   <Trash2
                     className="cursor-pointer text-red-500 hover:text-red-600 transition"
                     onClick={() => setDeleteId(course.id)}

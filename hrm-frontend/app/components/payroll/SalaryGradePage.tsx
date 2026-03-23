@@ -17,7 +17,7 @@ interface SalaryGrade {
   esi_rate: number;
 }
 
-export default function SalaryGradesPage() {
+export default function SalaryGradesPage({ isModal = false }: { isModal?: boolean })  {
   const [grades, setGrades] = useState<SalaryGrade[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedGrade, setSelectedGrade] = useState<SalaryGrade | undefined>(undefined);
@@ -46,7 +46,7 @@ export default function SalaryGradesPage() {
   };
 
   return (
-    <div className="p-6">
+   <div className={isModal ? "p-2" : "p-6"}>
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Salary Grades</h1>
         <button
@@ -56,7 +56,7 @@ export default function SalaryGradesPage() {
           Add Grade
         </button>
       </div>
-
+       <div className={isModal ? "max-h-[70vh] overflow-y-auto pr-2" : ""}>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {grades.map((grade) => (
           <div key={grade.id} className="border p-4 rounded shadow hover:shadow-lg">
@@ -78,6 +78,7 @@ export default function SalaryGradesPage() {
             </div>
           </div>
         ))}
+      </div>
       </div>
 
       {modalOpen && (

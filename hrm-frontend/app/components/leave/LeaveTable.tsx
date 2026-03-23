@@ -73,7 +73,7 @@ export default function LeaveTable({
           {leaves.map((l) => (
             <tr key={l.id} className="hover:bg-gray-50 transition">
               <td className="px-4 py-3 font-medium">
-                {employeeMap[l.employeeId] || l.employee?.firstName
+                {employeeMap[l.userId] || l.id
                   ? `${l.employee?.firstName || ""} ${l.employee?.lastName || ""}`
                   : "Unknown"}
               </td>

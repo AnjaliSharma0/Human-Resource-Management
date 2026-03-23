@@ -126,7 +126,7 @@ export default function AssignSalaryGradePage() {
                     <option value="">Select Grade</option>
                     {grades.map(g => (
                       <option key={g.id} value={g.id}>
-                        Basic: ₹{g.basic} | HRA: ₹{g.hra} | PF: ₹{g.pf}
+                        Basic: ₹{g.basic} | HRA: ₹{g.hra}
                       </option>
                     ))}
                   </select>

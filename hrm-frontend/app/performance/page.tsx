@@ -220,7 +220,7 @@ console.log("All review employee IDs:", reviews.map(r => r.employee.id));
           )}
 
           {/* Review Section */}
-          <Paper className="p-5 flex flex-col md:flex-row gap-3 shadow-lg rounded-xl">
+        <Paper className="p-5 grid grid-cols-1 md:grid-cols-5 gap-4 items-end shadow-lg rounded-xl">
             <TextField
               select
               label="Employee"
@@ -355,7 +355,7 @@ console.log("All review employee IDs:", reviews.map(r => r.employee.id));
      <div className="grid md:grid-cols-3 gap-6">
   {visibleReviews.map((r) => {
     const goal = goals.find((g) => g.id === r.goalId);
-    const employee = r.employee; // already comes from API
+    const employee = r.employee;
 
     return (
       <Paper key={r.id} className="p-5 rounded-xl shadow-md hover:shadow-xl transition">
@@ -372,15 +372,7 @@ console.log("All review employee IDs:", reviews.map(r => r.employee.id));
       </Paper>
     );
   })}
-  <ResponsiveContainer width="100%" height={300}>
-  <BarChart data={chartData} margin={{ top: 20, right: 30, left: 0, bottom: 0 }}>
-    <CartesianGrid strokeDasharray="3 3" />
-    <XAxis dataKey="name" />
-    <YAxis domain={[0, 10]} />
-    <Tooltip />
-    <Bar dataKey="rating" fill="#4ade80" /> {/* green bars */}
-  </BarChart>
-</ResponsiveContainer>
+  
 </div>
     </div>
   );

@@ -10,15 +10,6 @@ type Session = {
   clockOut?: string;
 };
 
-// type Attendance = {
-//   id: number;
-//   employeeId: number;
-//   firstName: string;
-//   date: string;
-//   sessions: Session[];
-//   totalHours: number;
-//   overtimeHours: number;
-// };
 type Attendance = {
   id: number;
   employee: {
@@ -197,7 +188,7 @@ export default function AttendanceDashboard() {
         </div>
       )}
       {/* Analytics cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      {/* <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-xl shadow hover:shadow-lg transition text-center">
           <p className="text-gray-500">Total Employees</p>
           <h2 className="text-2xl font-bold">{totalEmployees}</h2>
@@ -214,7 +205,7 @@ export default function AttendanceDashboard() {
           <p className="text-gray-500">Missing Evening Punch</p>
           <h2 className="text-2xl font-bold text-red-500">{missingEveningPunch.length}</h2>
         </div>
-      </div>
+      </div> */}
 
       {/* Pie chart */}
       <div className="bg-white p-6 rounded-xl shadow w-full h-64">
@@ -286,7 +277,7 @@ export default function AttendanceDashboard() {
             </h3>
 
             <p className="text-sm text-gray-500">
-              ID: {a.employee.id || (role !== "admin" ? userId : "-")}
+              ID: {userId || (role !== "admin" ? userId : "-")}
             </p>
             <p className="text-sm text-gray-500">{new Date(a.date).toDateString()}</p>
             <p className="font-medium mt-2">Total Logged: {getTotalLoggedTime(a.sessions)}</p>

@@ -226,7 +226,7 @@ export default function DepartmentPage() {
 
                     {/* ADMIN ACTIONS */}
 
-                    {role === "admin" && (
+                    {/* {role === "admin" && (
 
                       <div className="flex gap-2">
 
@@ -249,7 +249,7 @@ export default function DepartmentPage() {
 
                       </div>
 
-                    )}
+                    )} */}
 
                   </li>
                 ))}

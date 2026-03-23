@@ -14,12 +14,13 @@ constructor(
 ){}
 
 async create(dto: CreateExpenseDto) {
+  // employeeId will always come (employee OR admin)
   const employee = await this.userRepo.findOne({
     where: { id: dto.employeeId },
   });
 
   if (!employee) {
-    throw new Error("Employee not found.");
+    throw new Error("User not found.");
   }
 
   const expense = this.repo.create({
@@ -65,5 +66,4 @@ async validateLimit(category, amount) {
 delete(id: number) {
   return this.repo.delete(id);
 }
-
 }

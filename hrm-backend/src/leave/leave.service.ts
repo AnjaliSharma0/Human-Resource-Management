@@ -35,7 +35,10 @@ export class LeaveService {
 
   // Apply leave (employeeId comes from JWT)
 async applyLeave(dto: ApplyLeaveWithEmployeeId) {
-  const employee = await this.employeeRepo.findOne({ where: { id: dto.employeeId } });
+ const employee = await this.employeeRepo.findOne({
+  where: { user: { id: dto.employeeId } },
+  
+});
   if (!employee) throw new NotFoundException("Employee not found");
 
   const leaveType = await this.typeRepo.findOne({ where: { id: dto.leaveTypeId } });

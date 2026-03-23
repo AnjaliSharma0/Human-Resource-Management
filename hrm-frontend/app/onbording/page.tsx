@@ -6,7 +6,7 @@ import ChecklistTracker from "../components/onbording/ChecklistTRcker";
 import OrientationScheduler from "../components/onbording/OrientationSchedukar";
 
 
-const tabs = ["Documents", "Checklist", "Orientation"];
+const tabs = ["Documents", "Orientation"];
 
 export default function OnboardingPage() {
   const [activeTab, setActiveTab] = useState("Documents");

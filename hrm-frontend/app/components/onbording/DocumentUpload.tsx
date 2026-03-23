@@ -129,8 +129,12 @@ export default function DocumentUpload() {
               className="p-4 border rounded-xl shadow-sm bg-white hover:shadow-md transition flex flex-col justify-between"
             >
               <div>
+
                 <p className="font-semibold text-gray-800 truncate">{doc.documentName}</p>
                 <p className="text-sm text-gray-500">{doc.documentType}</p>
+                  <p className="text-sm text-gray-600 mt-1">
+    Uploaded by: EmpId: {doc.employeeName || doc.employeeId || "Unknown"}
+  </p>
                 <p className="text-sm mt-1">
                   Status:{" "}
                   <span
@@ -142,7 +146,7 @@ export default function DocumentUpload() {
               </div>
 
               <div className="mt-4 flex flex-wrap gap-2">
-                {doc.fileUrl && (
+                {/* {doc.fileUrl && (
                   <a
                     href={`http://localhost:5000/uploads/${doc.fileUrl}`}
                     target="_blank"
@@ -151,9 +155,9 @@ export default function DocumentUpload() {
                   >
                     View
                   </a>
-                )}
+                )} */}
 
-                <RoleGuard allowed={["manager"]}>
+                <RoleGuard allowed={["manager","admin"]}>
                   {!doc.isVerified && (
                     <button
                       onClick={() => approveDoc(doc.id)}
@@ -164,7 +168,7 @@ export default function DocumentUpload() {
                   )}
                 </RoleGuard>
 
-                <RoleGuard allowed={["admin"]}>
+                <RoleGuard allowed={["admin","employee"]}>
                   <button
                     onClick={() => deleteDoc(doc.id)}
                     className="px-3 py-1 text-sm bg-red-500 text-white rounded hover:bg-red-600"

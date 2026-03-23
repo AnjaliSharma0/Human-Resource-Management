@@ -147,12 +147,12 @@ export default function EmployeePage() {
                 <EditIcon fontSize="small" />
               </button>
 
-              <button
+              {/* <button
                 onClick={() => setDeleteModal(emp)}
                 className="text-red-600 hover:scale-110 transition"
               >
                 <DeleteIcon fontSize="small" />
-              </button>
+              </button> */}
             </div>
           </motion.div>
         ))}

@@ -223,10 +223,11 @@ export default function LeaveCalendarPage() {
           <p className="text-gray-500 text-sm text-center">Manage employee leaves & holidays</p>
         </div>
       </div>
+      
 
       {/* Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-2 mb-6">
-        {["calendar", "leaveStats", "applications", "leaveTypes", "balance", "holidays"].map((t) => (
+        {[ "holidays","calendar", "leaveStats", "applications", "balance"].map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
@@ -242,20 +243,6 @@ export default function LeaveCalendarPage() {
       {/* Calendar */}
       {tab === "calendar" && (
         <div className="bg-white p-4 rounded-xl shadow overflow-x-auto">
-          <div className="flex flex-col sm:flex-row gap-3 mb-4">
-            <input
-              placeholder="Filter by employee"
-              value={employeeFilter}
-              onChange={(e) => setEmployeeFilter(e.target.value)}
-              className="border p-2 rounded w-full sm:w-1/2"
-            />
-            <input
-              placeholder="Filter by leave type"
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
-              className="border p-2 rounded w-full sm:w-1/2"
-            />
-          </div>
 
           <Calendar
             tileContent={tileContent}
@@ -279,12 +266,12 @@ export default function LeaveCalendarPage() {
       {/* Applications */}
       {tab === "applications" && (
         <div className="overflow-x-auto">
-          <LeaveTable leaves={leaves} showActions />
+          <LeaveTable leaves={leaves} />
         </div>
       )}
 
       {/* Others */}
-      {tab === "leaveTypes" && <LeaveTypeAdmin />}
+      {/* {tab === "leaveTypes" && <LeaveTypeAdmin />} */}
       {tab === "balance" && <LeaveBalanceAdmin />}
       {tab === "holidays" && <HolidayPage />}
 

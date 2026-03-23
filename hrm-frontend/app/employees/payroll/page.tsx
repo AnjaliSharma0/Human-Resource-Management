@@ -355,12 +355,12 @@ export default function EmployeePayrollPage() {
           </p>
         </div>
 
-        <button
+        {/* <button
           onClick={bulkDownload}
           className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition"
         >
           Bulk Download
-        </button>
+        </button> */}
       </div>
 
       {/* 🔍 Filters */}
@@ -429,12 +429,12 @@ export default function EmployeePayrollPage() {
                     View
                   </button>
 
-                  <button
+                  {/* <button
                     onClick={() => downloadPayslip(p.id)}
                     className="flex-1 text-sm bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700"
                   >
                     Download
-                  </button>
+                  </button> */}
                 </div>
               </div>
             ))}

@@ -18,6 +18,7 @@ import {
   InputLabel,
   FormControl,
   Stack,
+  SelectChangeEvent,
 } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import { Edit, Delete, Person } from "@mui/icons-material";
@@ -138,6 +139,7 @@ export default function OrgStructureDashboard() {
   const [editingItem, setEditingItem] = useState<any>(null);
   const [formData, setFormData] = useState<any>({});
   const [designations, setDesinations] = useState<any[]>([])
+ 
   const route = useRouter()
   useEffect(() => {
     const role = typeof window !== "undefined" ? localStorage.getItem("role") || "employee" : "employee";
@@ -172,7 +174,9 @@ export default function OrgStructureDashboard() {
 
     // Filter by department
     if (selectedDept !== "") {
-      temp = temp.filter((e) => e.department?.id === selectedDept);
+      temp = temp.filter(
+  (e) => Number(e.department?.id) === Number(selectedDept)
+   );
     }
 
     setFilteredEmployees(temp);
@@ -219,6 +223,11 @@ export default function OrgStructureDashboard() {
     }
   };
 
+const handleDeptChange = (e: SelectChangeEvent) => {
+  const value = e.target.value;
+  setSelectedDept(value === "" ? "" : Number(value));
+};
+
   const topManagers = employees.filter((emp) => emp.user.role === "manager");
 
   return (
@@ -228,14 +237,14 @@ export default function OrgStructureDashboard() {
         Org Structure & Analytics
       </Typography>
 
-      {/* Admin Buttons */}
+      {/* Admin Buttons
       {userRole === "admin" && (
         <Stack direction={{ xs: "column", sm: "row" }} spacing={2} justifyContent="center" className="mb-6">
           <Button variant="contained" color="primary" onClick={openAddModal}>
             Add Employee
           </Button>
         </Stack>
-      )}
+      )} */}
 
       {/* Search + Department Filter */}
       <Stack direction={{ xs: "column", sm: "row" }}
@@ -251,15 +260,21 @@ export default function OrgStructureDashboard() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <FormControl size="small" sx={{ minWidth: 180 }}>
+        {/* <FormControl size="small" sx={{ minWidth: 180 }}>
           <InputLabel>Filter by Department </InputLabel>
-          <Select value={selectedDept} label="Filter by Department " onChange={(e) => setSelectedDept(e.target.value)}>
+         <Select
+            value={selectedDept === "" ? "" : String(selectedDept)}
+            label="Filter by Department"
+            onChange={handleDeptChange}
+          >
             <MenuItem value="">All Departments</MenuItem>
             {departments.map((d) => (
-              <MenuItem key={d.id} value={d.id}>{d.name}</MenuItem>
+              <MenuItem key={d.id} value={d.id}>
+                {d.name}
+              </MenuItem>
             ))}
-          </Select>
-        </FormControl>
+         </Select>
+        </FormControl> */}
       </Stack>
 
       <Stack direction={{ xs: "column", md: "row" }} spacing={3} flexWrap="wrap">
@@ -349,7 +364,7 @@ export default function OrgStructureDashboard() {
                     <VisibilityIcon />
                   </Button>
 
-                  {userRole === "admin" && (
+                  {/* {userRole === "admin" && (
                     <div className="flex gap-1">
                       <IconButton onClick={() => openEditModal(e)} size="small">
                         <Edit fontSize="small" />
@@ -358,7 +373,7 @@ export default function OrgStructureDashboard() {
                         <Delete fontSize="small" />
                       </IconButton>
                     </div>
-                  )}
+                  )} */}
                 </div>
               </div>
             ))}
@@ -388,7 +403,7 @@ export default function OrgStructureDashboard() {
               <OrgNode
                 key={manager.id}
                 employee={manager}
-                employees={filteredEmployees}
+                employees={employees}
               />
             ))
           ) : (

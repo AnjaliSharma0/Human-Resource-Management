@@ -223,8 +223,11 @@ export default function EmployeeReports() {
             setLoading(false);
         }
     };
-
-    if (loading) return <Loading message="Loading..." size="lg"/>;
+            const formatStatus = (a: Attendance) => {
+            if (a.totalHours === 0) return "Absent";
+            return a.status || "-";
+            };
+                if (loading) return <Loading message="Loading..." size="lg"/>;
 
     // Analytics data
     const attendanceChartData = attendance.map(a => ({ date: formatDate(a.date), hours: a.totalHours || 0 }));
@@ -255,7 +258,7 @@ export default function EmployeeReports() {
                         {attendance.length ? attendance.map((a, i) => (
                             <tr key={i} className="border-b">
                                 <td>{formatDate(a.date)}</td>
-                                <td>{a.status || "-"}</td>
+                                <td>{formatStatus(a)}</td>
                                 <td>{a.totalHours ?? 0}</td>
                                 <td>{a.overtimeHours ?? 0}</td>
                             </tr>

@@ -221,6 +221,7 @@ export default function ChatPage() {
     const res = await fetch(`http://localhost:5000/helpdesk/tickets/${ticketId}/messages`);
     const data = await res.json();
     setMessages(data);
+    console.log(data)
   };
 
   const sendMessage = () => {
@@ -231,7 +232,7 @@ export default function ChatPage() {
       senderId: user.id,
       content: newMsg,
     });
-
+ 
     setNewMsg('');
   };
 
@@ -246,7 +247,7 @@ export default function ChatPage() {
             className={`mb-2 ${m.sender?.id === user?.id ? 'text-right' : ''}`}
           >
             <div className="text-xs text-gray-500">
-              {m.sender?.name || 'Unknown'}
+              {m.sender?.firstname || 'Unknown'}
             </div>
 
             <div className="inline-block bg-blue-100 px-3 py-2 rounded">

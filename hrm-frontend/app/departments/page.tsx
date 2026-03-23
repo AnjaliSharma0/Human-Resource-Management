@@ -39,7 +39,8 @@ export default function DepartmentPage() {
   const route = useRouter()
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedDept, setSelectedDept] = useState<Department|null>(null);
-
+  const [editOpen, setEditOpen] = useState(false);
+const [editDept, setEditDept] = useState<Department | null>(null);
   const openConfirm = (desig: any) => {
     setSelectedDept(desig);
     setOpenDialog(true);
@@ -65,6 +66,21 @@ export default function DepartmentPage() {
     fetchDepartments();
   }, []);
 
+  const handleUpdate = async () => {
+  if (!editDept?.name || !editDept?.location) {
+    return toast.error("All fields are required");
+  }
+
+  try {
+    await api.patch(`/departments/${editDept.id}`, editDept);
+    toast.success("Department updated");
+    setEditOpen(false);
+    fetchDepartments();
+  } catch (err) {
+    console.error(err);
+    toast.error("Error updating department");
+  }
+};
   const handleSubmit = async () => {
     if (!name || !location) return toast.error("All fields are required");
     try {
@@ -88,12 +104,16 @@ export default function DepartmentPage() {
     }
   };
 
+  // const handleEdit = (dept: Department) => {
+  //   setEditingId(dept.id);
+  //   setName(dept.name);
+  //   setLocation(dept.location);
+  //   setDescription(dept.description || "")
+  // };
   const handleEdit = (dept: Department) => {
-    setEditingId(dept.id);
-    setName(dept.name);
-    setLocation(dept.location);
-    setDescription(dept.description || "")
-  };
+  setEditDept(dept);
+  setEditOpen(true);
+};
 
   const handleDelete = async (id: number) => {
     try {
@@ -106,91 +126,6 @@ export default function DepartmentPage() {
       toast.error("Error deleting department");
     }
   };
-
-  // return (
-  //   <Box p={4} sx={{padding: "6px"}}>
-  //     <div className="flex justify-between m-4">
-  //       <Typography variant="h4" mb={3}>Departments</Typography>
-  //       <Button
-  //         className="text-white bg-red-600 hover:bg-red-700"
-  //         onClick={() => route.push("/department")}
-  //       >
-  //         <BackwardIcon />
-  //       </Button>
-  //     </div>
-
-  //     <Stack direction={{ xs: "column", sm: "row" }} spacing={2} mb={4}>
-  //       <TextField
-  //         label="Name"
-  //         value={name}
-  //         onChange={(e) => setName(e.target.value)}
-  //         fullWidth
-  //       />
-  //       <TextField
-  //         label="Location"
-  //         value={location}
-  //         onChange={(e) => setLocation(e.target.value)}
-  //         fullWidth
-  //       />
-  //        <TextField
-  //         label="Description"
-  //         value={description}
-  //         onChange={(e) => setDescription(e.target.value)}
-  //         fullWidth
-  //         multiline
-  //         rows={2}
-  //       />
-  //       <Button
-  //         variant="contained"
-  //         onClick={handleSubmit}
-  //         sx={{ minWidth: 120 }}
-  //       >
-  //         {editingId ? "Update" : "Create"}
-  //       </Button>
-  //     </Stack>
-
-  //     {/* <Stack spacing={2}>
-  //       {departments.map((dept) => (
-  //         <Card
-  //           key={dept.id}
-  //           sx={{
-  //             "&:hover": { boxShadow: 6 },
-  //             transition: "0.3s"
-  //           }}
-  //         > */}
-  //     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-  //       {departments.map((dept: any) => (
-  //         <Card key={dept.id} className="w-full">
-  //           <CardContent>
-  //             <Typography variant="h6">{dept.name}</Typography>
-  //             <Typography color="text.secondary">{dept.location}</Typography>
-  //           </CardContent>
-  //           <Typography className="text-sm text-gray-600 mt-2">
-  //             {dept.description || "No description available"}
-  //           </Typography>
-  //           <CardActions>
-  //             <Button size="small" onClick={() => handleEdit(dept)}><ModeEdit/></Button>
-  //             <Button className="bg-red-600 text-white p-2 m-2 rounded-lg" size="small" color="error" onClick={() => openConfirm(dept)}><DeleteIcon /></Button>
-  //           </CardActions>
-  //         </Card>
-  //       ))}
-  //     </div>
-  //     {/* </Card>
-  //       ))}
-  //     </Stack> */}
-
-  //     <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
-  //       <DialogTitle>Confirm Delete</DialogTitle>
-  //       <DialogContent>
-  //         <Typography>Are you sure you want to delete "{selectedDept?.name}"?</Typography>
-  //       </DialogContent>
-  //       <DialogActions>
-  //         <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
-  //         <Button color="error" onClick={confirmDelete}>Delete</Button>
-  //       </DialogActions>
-  //     </Dialog>
-  //   </Box>
-  // );
 
   return (
   <Box className="bg-gray-100 min-h-screen p-6">
@@ -283,13 +218,13 @@ export default function DepartmentPage() {
               <ModeEdit fontSize="small" />
             </Button>
 
-            <Button
+            {/* <Button
               size="small"
               onClick={() => openConfirm(dept)}
               className="text-red-600"
             >
               <DeleteIcon fontSize="small" />
-            </Button>
+            </Button> */}
           </CardActions>
         </Card>
       ))}
@@ -319,6 +254,62 @@ export default function DepartmentPage() {
         </Button>
       </DialogActions>
     </Dialog>
+    <Dialog open={editOpen} onClose={() => setEditOpen(false)} fullWidth maxWidth="sm">
+  <DialogTitle className="font-semibold">
+    Edit Department
+  </DialogTitle>
+
+  <DialogContent>
+    <Stack spacing={2} mt={1}>
+      <TextField
+        label="Department Name"
+        value={editDept?.name || ""}
+        onChange={(e) =>
+          setEditDept((prev) =>
+            prev ? { ...prev, name: e.target.value } : prev
+          )
+        }
+        fullWidth
+      />
+
+      <TextField
+        label="Location"
+        value={editDept?.location || ""}
+        onChange={(e) =>
+          setEditDept((prev) =>
+            prev ? { ...prev, location: e.target.value } : prev
+          )
+        }
+        fullWidth
+      />
+
+      <TextField
+        label="Description"
+        value={editDept?.description || ""}
+        onChange={(e) =>
+          setEditDept((prev) =>
+            prev ? { ...prev, description: e.target.value } : prev
+          )
+        }
+        multiline
+        rows={3}
+        fullWidth
+      />
+    </Stack>
+  </DialogContent>
+
+  <DialogActions>
+    <Button onClick={() => setEditOpen(false)}>Cancel</Button>
+
+    <Button
+      variant="contained"
+      onClick={handleUpdate}
+      className="bg-blue-600 hover:bg-blue-700"
+    >
+      Update
+    </Button>
+  </DialogActions>
+</Dialog>
   </Box>
 );
 }

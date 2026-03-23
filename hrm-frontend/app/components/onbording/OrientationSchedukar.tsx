@@ -136,7 +136,7 @@ export default function OrientationScheduler() {
               <p className="font-semibold text-gray-800">Trainer: {o.trainer}</p>
               <p className="text-gray-500">Date: {new Date(o.date).toLocaleDateString()}</p>
               <p className="text-blue-600">
-                <a href={o.meetingLink} target="_blank" rel="noreferrer">
+                <a href={o.meetingLink} target="_blank" rel="noreferrer"  className="mt-2 bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition">
                   Join Meeting
                 </a>
               </p>
@@ -144,12 +144,12 @@ export default function OrientationScheduler() {
 
             {/* Optional: Employee can mark attendance */}
             <RoleGuard allowed={["employee"]}>
-              <button
+              {/* <button
                 onClick={() => toast.success("Marked as attended")}
                 className="mt-2 bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600 transition"
               >
                 Mark Attendance
-              </button>
+              </button> */}
             </RoleGuard>
           </div>
         ))}

@@ -227,7 +227,7 @@ export default function Sidebar() {
     { name: "OffBording", path: "/offbording", icon: <ListRestartIcon /> },
     { name: "HelpDesk", path: "/helpdesk/admin/faq", icon: <HelpCenterOutlined /> },
     { name: "Calendar", path: "/leave/calendar", icon: <DateRangeOutlined /> },
-    { name: "Integrations", path: "/integrations", icon: <DownloadIcon /> },
+    // { name: "Integrations", path: "/integrations", icon: <DownloadIcon /> },
   ];
 
   // ✅ MANAGER MENU (🔥 NEW)
@@ -254,13 +254,13 @@ export default function Sidebar() {
     { name: "All Departments", path: "/department", icon: <ApartmentIcon /> },
     { name: "Expenses & Rebursement", path: "/expenses", icon: <DollarSignIcon /> },
     { name: "Performance", path: "/performance", icon: <BarChart3Icon /> },
-    { name: "Careers", path: "/careers", icon: <GroupWork /> },
+    // { name: "Careers", path: "/careers", icon: <GroupWork /> },
     { name: "Reports", path: "/employees/reports", icon: <PriorityHighOutlined /> },
     { name: "OnBording", path: "/onbording", icon: <ListRestartIcon /> },
     { name: "HelpDesk", path: "/helpdesk", icon: <HelpCenterOutlined /> },
     { name: "OffBording", path: "/offbording", icon: <ListRestartIcon /> },
     { name: "Calendar", path: "/leave/calendar", icon: <DateRangeOutlined /> },
-    { name: "Integrations", path: "/integrations", icon: <DownloadIcon /> },
+    // { name: "Integrations", path: "/integrations", icon: <DownloadIcon /> },
 
   ];
 
