@@ -16,6 +16,9 @@ export class Department {
   @Column()
   location: string;
 
+  @Column({nullable:true})
+  description:string
+
     // Link to a Location entity
   @ManyToOne(() => Location, loc => loc.departments, { nullable: true })
   mappedLocation: Location;

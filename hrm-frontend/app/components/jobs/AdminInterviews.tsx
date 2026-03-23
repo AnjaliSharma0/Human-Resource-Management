@@ -60,7 +60,7 @@ export default function ScheduleInterviewModal({ open, onClose, onScheduled, can
         >
           {candidates.map((c) => (
             <MenuItem key={c.id} value={c.id}>
-              {c.firstName} {c.lastName}
+              {c.id}
             </MenuItem>
           ))}
         </TextField>

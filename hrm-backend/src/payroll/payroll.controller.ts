@@ -49,12 +49,26 @@ console.log("USER:", req.user);
 
   const payrolls = await this.payrollService.findByEmployee(employeeId);
 
-  return payrolls.map(p => ({
-    id: p.id,
-    month: p.month,
-    year: p.year,
-    netSalary: Number(p.net_salary),
-  }));
+ return payrolls.map(p => ({
+  id: p.id,
+  month: p.month,
+  year: p.year,
+
+  basic: Number(p.basic),
+  hra: Number(p.hra),
+  allowances: Number(p.allowances),
+  deductions: Number(p.deductions),
+
+  pf: Number(p.pf),
+  esi: Number(p.esi),
+  tax: Number(p.tax),
+
+  bonus: Number(p.bonus),
+  arrears: Number(p.arrears),
+
+  grossSalary: Number(p.gross_salary),
+  netSalary: Number(p.net_salary),
+}));
 }
 
   // Admin/Employee: get payroll by ID

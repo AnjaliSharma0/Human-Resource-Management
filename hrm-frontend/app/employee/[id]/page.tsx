@@ -41,6 +41,7 @@ export default function EmployeeCard() {
           <div>
             <p className="text-gray-500 font-medium">Name</p>
             <p className="font-semibold">{profile.firstName} {profile.lastName}</p>
+            <p>{profile.role}</p>
           </div>
           <div>
             <p className="text-gray-500 font-medium">Email</p>

@@ -16,7 +16,7 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { Button } from "@mui/material";
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
 import { useRouter } from "next/navigation";
 
 import api from "@/app/src/services/api";
@@ -54,6 +54,8 @@ export default function AdminDashboard() {
   const [openInterviewModal, setOpenInterviewModal] = useState(false);
   const [openOfferModal, setOpenOfferModal] = useState(false);
 
+  const [deleteOfferId, setDeleteOfferId] = useState<number | null>(null);
+const [openDeleteModal, setOpenDeleteModal] = useState(false);
   const COLORS = ["#10B981", "#F59E0B", "#EF4444"];
 
   const loadData = async () => {
@@ -82,7 +84,9 @@ export default function AdminDashboard() {
       setJobPostings(postings.data || []);
       setCandidates(cands.data || []);
       setInterviews(ints.data || []);
+      console.log("interviws", ints.data)
       setOfferLetters(offers.data || []);
+      console.log(offers.data)
     } catch (err) {
       console.error("Error loading dashboard:", err);
     }
@@ -143,20 +147,21 @@ export default function AdminDashboard() {
               <Tooltip />
             </PieChart>
           </ResponsiveContainer>
-
-          <div className="mt-4 overflow-x-auto">
-            <LeaveTable
-              leaves={leaves}
-              employees={employees}
-              showActions
-              onAction={async (id, status) => {
-                await api.patch(`/leave/${id}`, { status });
-                loadData();
-              }}
-            />
-          </div>
         </div>
       </div>
+      <div className="mt-4 overflow-x-auto">
+        <h2 className="text-white text-center bg-blue-600 rounded">Leave Table</h2>
+        <LeaveTable
+          leaves={leaves}
+          employees={employees}
+          showActions
+          onAction={async (id, status) => {
+            await api.put(`/leave/${id}/status`, { status });
+            loadData();
+          }}
+        />
+      </div>
+
 
       {/* ATS SECTION */}
       <div className="bg-white p-5 rounded-xl shadow">
@@ -174,13 +179,12 @@ export default function AdminDashboard() {
 
         {/* TABS */}
         <div className="flex flex-wrap gap-2 mb-4">
-          {(["Job Requisitions","Job Postings","Candidates","Interviews","Offer Letters"] as Tab[]).map(tab => (
+          {(["Job Requisitions", "Job Postings", "Candidates", "Interviews", "Offer Letters"] as Tab[]).map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-1 rounded-full text-sm ${
-                activeTab === tab ? "bg-indigo-600 text-white" : "bg-gray-100"
-              }`}
+              className={`px-4 py-1 rounded-full text-sm ${activeTab === tab ? "bg-indigo-600 text-white" : "bg-gray-100"
+                }`}
             >
               {tab}
             </button>
@@ -193,22 +197,125 @@ export default function AdminDashboard() {
             <GridList data={jobRequisitions} titleKey="title" subKey="department" />
           )}
 
-          {activeTab === "Job Postings" && (
-            <GridList data={jobPostings} titleKey="title" subKey="location" />
-          )}
+         {activeTab === "Job Postings" && (
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {jobPostings.length > 0 ? (
+      jobPostings.map((job) => (
+        <div key={job.id} className="bg-gray-50 p-4 rounded shadow hover:shadow-md transition">
+          <h3 className="font-semibold text-lg">{job.jobRequisition?.title}</h3>
+          <p className="text-sm text-gray-500">
+            Department: {job.jobRequisition?.department?.name || "N/A"}
+          </p>
+          <p className="text-sm mt-2">
+            Posting Date: {new Date(job.postingStartDate).toLocaleDateString()}
+          </p>
+          <div className="mt-2 flex gap-2">
+            {job.isInternal && <span className="px-2 py-1 bg-green-200 rounded text-xs">Internal</span>}
+            {job.isExternal && <span className="px-2 py-1 bg-blue-200 rounded text-xs">External</span>}
+          </div>
+        </div>
+      ))
+    ) : (
+      <p className="text-gray-500">No job postings available.</p>
+    )}
+  </div>
+)}
+
 
           {activeTab === "Candidates" && <AdminCandidates />}
 
-          {activeTab === "Interviews" && (
-            <SimpleList data={interviews} />
-          )}
+        {activeTab === "Interviews" && (
+  <div className="space-y-2">
+    {interviews.length > 0 ? (
+      interviews.map((item) => (
+        <div key={item.id} className="bg-gray-50 p-4 rounded shadow hover:shadow-md transition flex flex-col gap-1">
+          <p><span className="font-semibold">CandidateID:</span> {item.id || "N/A"}</p>
+          <p><span className="font-semibold">Interviewer:</span> {item.interviewer?.firstName} {item.interviewer?.lastName}</p>
+          <p><span className="font-semibold">Date & Time:</span> {new Date(item.dateTime).toLocaleString()}</p>
+          <p><span className="font-semibold">Mode:</span> {item.mode}</p>
+          <p><span className="font-semibold">Status:</span> {item.status}</p>
+        </div>
+      ))
+    ) : (
+      <p className="text-gray-500">No interviews scheduled.</p>
+    )}
+  </div>
+)}
 
-          {activeTab === "Offer Letters" && (
-            <SimpleList data={offerLetters} />
+         {activeTab === "Offer Letters" && (
+  <div className="space-y-2">
+    {offerLetters.length > 0 ? (
+      offerLetters.map((offer) => (
+        <div key={offer.id} className="bg-gray-50 p-4 rounded shadow flex justify-between items-center">
+          <div>
+            <p><span className="font-semibold">CandidateId:</span> {offer.candidate.id}</p>
+            <p><span className="font-semibold">Status:</span> {offer.status}</p>
+            <p><span className="font-semibold">Sent At:</span> {new Date(offer.sentAt).toLocaleDateString()}</p>
+          </div>
+          {offer.offerFileUrl && (
+           <div className="flex gap-2">
+  {offer.offerFileUrl && (
+    <a
+      href={offer.offerFileUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="px-3 py-1 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+    >
+      View
+    </a>
+  )}
+
+ <button
+  onClick={() => {
+    setDeleteOfferId(offer.id);
+    setOpenDeleteModal(true);
+  }}
+  className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700"
+>
+  Delete
+</button>
+</div>
           )}
         </div>
+      ))
+    ) : (
+      <p className="text-gray-500">No offer letters found.</p>
+    )}
+  </div>
+)}
+        </div>
       </div>
-
+<Dialog
+  open={openDeleteModal}
+  onClose={() => setOpenDeleteModal(false)}
+>
+  <DialogTitle>Confirm Delete</DialogTitle>
+  <DialogContent>
+    Are you sure you want to delete this offer letter?
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={() => setOpenDeleteModal(false)}>Cancel</Button>
+    <Button
+      onClick={async () => {
+        if (deleteOfferId) {
+          try {
+            await api.delete(`/offer-letters/${deleteOfferId}`);
+            loadData(); // reload offer letters
+            setOpenDeleteModal(false);
+            setDeleteOfferId(null);
+          } catch (err) {
+            console.error(err);
+            alert('Failed to delete offer letter');
+          }
+        }
+      }}
+      variant="contained"
+      color="error"
+    >
+      Delete
+    </Button>
+  </DialogActions>
+</Dialog>
       {/* MODALS */}
       <CreateJobRequisitionModal open={openJobReqModal} onClose={() => setOpenJobReqModal(false)} onCreated={loadData} />
       <AddJobPostingModal open={openJobPostModal} onClose={() => setOpenJobPostModal(false)} onCreated={loadData} />

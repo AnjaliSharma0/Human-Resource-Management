@@ -87,4 +87,12 @@ remove(@Param("id") id:number){
  return this.employeeService.remove(id);
 }
 
+  @Patch(":id/salary-grade")
+  assignSalaryGrade(
+    @Param("id") empId: number,
+    @Body() body: { salaryGradeId: number }
+  ) {
+    return this.employeeService.assignSalaryGrade(empId, body.salaryGradeId);
+  }
+
 }

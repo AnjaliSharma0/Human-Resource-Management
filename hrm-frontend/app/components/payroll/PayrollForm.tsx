@@ -1,5 +1,6 @@
 "use client";
 
+import api from "@/app/src/services/api";
 import { createPayroll } from "@/app/src/services/payroll";
 import { TextField, Button, Paper, MenuItem, Select, InputLabel, FormControl } from "@mui/material";
 import { useRouter } from "next/navigation";
@@ -14,11 +15,15 @@ interface PayrollFormProps {
   close?: () => void;
   reload?: () => void;
 }
+interface SalaryGrade {
+  id: number;
+  grade_name: string;
+}
 
 export default function PayrollForm({ salaryGrades = [] }: PayrollFormProps) {
   const route = useRouter();
   const token = localStorage.getItem("token");
-
+  const [salaryGradesDrop, setSalaryGradesDrop]= useState<SalaryGrade[]>([])
   const [form, setForm] = useState({
     employeeId: "",
     month: "",
@@ -28,7 +33,20 @@ export default function PayrollForm({ salaryGrades = [] }: PayrollFormProps) {
     tax: "",
     deductions: "",
   });
-
+useEffect(()=>{
+  fetchSalaryGrades()
+  
+},[])
+  const fetchSalaryGrades= async ()=>{
+            try {
+               const res= await api.get("/salary-grades")
+               setSalaryGradesDrop(res.data)
+               console.log(res.data)
+            } catch (error:any) {
+              console.log(error.message)
+              toast.error("Error in fetching salaryGrades")
+            }
+      }
   // Auto-fill basic and HRA when salary grade changes
   useEffect(() => {
     if (!form.salaryGradeId) return;
@@ -118,9 +136,9 @@ export default function PayrollForm({ salaryGrades = [] }: PayrollFormProps) {
               value={form.salaryGradeId}
               onChange={handleChange}
             >
-              {salaryGrades.map(grade => (
-                <MenuItem key={grade.id} value={grade.id}>
-                  {grade.grade_name}
+              {salaryGradesDrop.map(sal => (
+                <MenuItem key={sal.id} value={sal.id}>
+                  {sal.grade_name}
                 </MenuItem>
               ))}
             </Select>

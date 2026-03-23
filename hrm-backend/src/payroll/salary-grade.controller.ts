@@ -31,4 +31,5 @@ export class SalaryGradeController {
   remove(@Param("id") id: number) {
     return this.service.remove(Number(id));
   }
+  
 }

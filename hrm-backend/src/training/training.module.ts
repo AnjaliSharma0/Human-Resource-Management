@@ -16,6 +16,6 @@ import { SkillController } from "./employee-skill-controllerr";
 @Module({
 imports:[TypeOrmModule.forFeature([TrainingEnrollment,SkillController, TrainingCourse, Employee,Skill])],
 providers:[TrainingService, SkillMatrixService],
-controllers:[TrainingController, SkillMatrixController,EmployeeTrainingController, AdminTrainingController ]
+controllers:[TrainingController, SkillMatrixController,SkillController,EmployeeTrainingController, AdminTrainingController ]
 })
 export class TrainingModule{}

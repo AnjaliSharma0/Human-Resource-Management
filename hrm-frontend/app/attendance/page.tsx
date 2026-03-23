@@ -10,10 +10,22 @@ type Session = {
   clockOut?: string;
 };
 
+// type Attendance = {
+//   id: number;
+//   employeeId: number;
+//   firstName: string;
+//   date: string;
+//   sessions: Session[];
+//   totalHours: number;
+//   overtimeHours: number;
+// };
 type Attendance = {
   id: number;
-  employeeId: number;
-  firstName: string;
+  employee: {
+    id: number;
+    firstName: string;
+    lastName: string;
+  };
   date: string;
   sessions: Session[];
   totalHours: number;
@@ -57,14 +69,14 @@ export default function AttendanceDashboard() {
       });
 
       setHistory(res.data);
-
+       console.log(res.data)
       if (role !== "admin") {
         const today = res.data.find(
           (a: Attendance) =>
             new Date(a.date).toDateString() === new Date().toDateString()
         );
         setAttendance(today);
-
+       
         if (today?.sessions?.length) {
           const last = today.sessions.at(-1);
           if (last && !last.clockOut) startTimer(last.clockIn);
@@ -233,7 +245,7 @@ export default function AttendanceDashboard() {
           <div className="flex flex-wrap gap-4">
             {currentlyPunchedIn.map((a) => (
               <span key={a.id} className="px-3 py-1 bg-blue-200 text-blue-800 rounded-full font-medium text-sm">
-                {a.firstName} (ID: {a.employeeId})
+                {a.employee.firstName} (ID: {a.employee.id})
               </span>
             ))}
           </div>
@@ -243,7 +255,7 @@ export default function AttendanceDashboard() {
         <div className="bg-green-50 p-6 rounded-xl shadow">
           <h2 className="text-xl font-semibold mb-2">Today's Attendance</h2>
           <p><strong>Employee ID:</strong> {userId}</p>
-          <p><strong>Name:</strong> {attendance.firstName || "You"}</p>
+          <p><strong>Name:</strong> {attendance.employee.firstName || "You"}</p>
           <p>Date: {new Date(attendance.date).toDateString()}</p>
 
           <p>Total Hours: {attendance.totalHours}h</p>
@@ -270,11 +282,11 @@ export default function AttendanceDashboard() {
               ${isMissingEveningPunch(a.sessions) ? "border-red-500" : ""}`}
           >
             <h3 className="text-lg font-semibold text-gray-800">
-              {a.firstName || (role !== "admin" ? "You" : "Unknown")}
+              {a.employee.firstName || (role !== "admin" ? "You" : "Unknown")}
             </h3>
 
             <p className="text-sm text-gray-500">
-              ID: {a.employeeId || (role !== "admin" ? userId : "-")}
+              ID: {a.employee.id || (role !== "admin" ? userId : "-")}
             </p>
             <p className="text-sm text-gray-500">{new Date(a.date).toDateString()}</p>
             <p className="font-medium mt-2">Total Logged: {getTotalLoggedTime(a.sessions)}</p>

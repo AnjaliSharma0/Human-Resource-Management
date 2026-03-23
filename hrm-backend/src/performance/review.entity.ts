@@ -11,10 +11,15 @@ export class Review {
   @ManyToOne(() => Employee, user => user.reviews)
   employee: Employee;
 
+ @ManyToOne(() => Employee)
+  reviewer: Employee;
+  
   @Column()
   rating: number;
 
   @Column()
   feedback: string;
 
+   @Column({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
+  createdAt: Date;
 }

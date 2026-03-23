@@ -49,34 +49,56 @@ export class TrainingService {
   //   const enrollment = this.enrollmentRepo.create({ employee, course });
   //   return this.enrollmentRepo.save(enrollment);
   // }
- async enroll(employeeId: number, courseId: number) {
-  const employee = await this.employeeRepo.findOne({
-    where: { id: employeeId },
-  });
+//  async enroll(employeeId: number, courseId: number) {
+//   const employee = await this.employeeRepo.findOne({
+//     where: { id: employeeId },
+//   });
 
-  const course = await this.courseRepo.findOne({
-    where: { id: courseId },
-  });
+//   const course = await this.courseRepo.findOne({
+//     where: { id: courseId },
+//   });
 
-  if (!employee || !course) {
-    throw new Error("Employee or Course not found");
-  }
+//   if (!employee || !course) {
+//     throw new Error("Employee or Course not found");
+//   }
 
-  // ✅ FIX: check both employee + course
+//   // ✅ FIX: check both employee + course
+//   const existing = await this.enrollmentRepo.findOne({
+//     where: {
+//       employee: { id: employeeId },
+//       course: { id: courseId },
+//     },
+//   });
+
+//   if (existing) {
+//     throw new Error("Already enrolled");
+//   }
+
+//   const enrollment = this.enrollmentRepo.create({
+//     employee,
+//     course,
+//     status
+//   });
+
+//   return this.enrollmentRepo.save(enrollment);
+// }
+
+async enroll(employeeId: number, courseId: number, status: EnrollmentStatus = EnrollmentStatus.PENDING) {
+  const employee = await this.employeeRepo.findOne({ where: { id: employeeId } });
+  const course = await this.courseRepo.findOne({ where: { id: courseId } });
+
+  if (!employee || !course) throw new Error("Employee or Course not found");
+
   const existing = await this.enrollmentRepo.findOne({
-    where: {
-      employee: { id: employeeId },
-      course: { id: courseId },
-    },
+    where: { employee: { id: employeeId }, course: { id: courseId } },
   });
 
-  if (existing) {
-    throw new Error("Already enrolled");
-  }
+  if (existing) throw new Error("Already enrolled");
 
   const enrollment = this.enrollmentRepo.create({
     employee,
     course,
+    status, // ✅ set status here
   });
 
   return this.enrollmentRepo.save(enrollment);

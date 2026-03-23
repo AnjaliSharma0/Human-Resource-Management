@@ -8,6 +8,7 @@ import 'react-calendar/dist/Calendar.css';
 import { leaveApi } from "@/app/src/services/leave";
 import LeaveTable from "@/app/components/leave/LeaveTable";
 import toast from "react-hot-toast";
+import { CheckCircle, Trash2 } from "lucide-react";
 
 interface Event {
   id: string | number;
@@ -145,8 +146,88 @@ export default function LeaveCalendarPage() {
         onClickDay={(value) => role !== "employee" && setSelectedDate(value)}
       />
 
-      {selectedDate && selectedEvents.length > 0 && role !== "employee" && (
-        <div className="mt-6 p-4 border rounded shadow-lg bg-white dark:bg-gray-800">
+
+{selectedDate && selectedEvents.length > 0 && role !== "employee" && (
+  <div className="mt-6 p-6 border border-gray-200 rounded-xl shadow-md bg-white overflow-x-auto">
+    <h3 className="text-lg font-semibold mb-4 text-gray-800">
+      Leaves on <span className="font-medium text-indigo-600">{selectedDate.toDateString()}</span>
+    </h3>
+
+    <table className="min-w-full text-left border-collapse">
+      <thead className="bg-gray-50">
+        <tr>
+          <th className="px-4 py-2 font-medium text-gray-700">Employee</th>
+          <th className="px-4 py-2 font-medium text-gray-700">Type</th>
+          <th className="px-4 py-2 font-medium text-gray-700">Start</th>
+          <th className="px-4 py-2 font-medium text-gray-700">End</th>
+          <th className="px-4 py-2 font-medium text-gray-700">Status</th>
+          <th className="px-4 py-2 font-medium text-gray-700">Reason</th>
+          <th className="px-4 py-2 font-medium text-gray-700">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {selectedEvents.map((leave) => (
+          <tr key={leave.id} className="hover:bg-gray-50 transition-colors">
+            <td className="px-4 py-3 text-gray-700">
+              {leave.employee?.firstName} {leave.employee?.lastName || ""}
+            </td>
+            <td className="px-4 py-3 text-gray-600">{leave.leaveType}</td>
+            <td className="px-4 py-3 text-gray-600">{leave.date}</td>
+            <td className="px-4 py-3 text-gray-600">{leave.date}</td>
+            <td className="px-4 py-3">
+              <span
+                className={`px-2 py-1 rounded-full text-sm font-medium ${
+                  leave.leaveStatus === "approved"
+                    ? "bg-green-100 text-green-800"
+                    : leave.leaveStatus === "rejected"
+                    ? "bg-red-100 text-red-800"
+                    : "bg-yellow-100 text-yellow-800"
+                }`}
+              >
+                {leave.leaveStatus}
+              </span>
+            </td>
+            <td className="px-4 py-3 text-gray-600">{leave.reason}</td>
+            <td className="px-4 py-3 flex gap-2">
+              <button
+                onClick={async () => {
+                  try {
+                    const originalId = leave.id.toString().split("-")[0];
+                    await leaveApi.updateLeaveStatus(Number(originalId), "approved");
+                    toast.success("Leave approved!");
+                    await fetchEvents();
+                  } catch {
+                    toast.error("Failed to update leave");
+                  }
+                }}
+                className="p-2 rounded-full bg-green-100 text-green-700 hover:bg-green-200 transition"
+              >
+                <CheckCircle fontSize="small" />
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    const originalId = leave.id.toString().split("-")[0];
+                    await leaveApi.updateLeaveStatus(Number(originalId), "rejected");
+                    toast.success("Leave rejected!");
+                    await fetchEvents();
+                  } catch {
+                    toast.error("Failed to update leave");
+                  }
+                }}
+                className="p-2 rounded-full bg-red-100 text-red-700 hover:bg-red-200 transition"
+              >
+                <Trash2 fontSize="small" />
+              </button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+)}
+      {/* {selectedDate && selectedEvents.length > 0 && role !== "employee" && (
+        <div className="mt-6 p-4 border-black-6- rounded shadow-lg bg-white shadow-lg">
           <h3 className="font-semibold mb-3">
             Leaves on {selectedDate.toDateString()}
           </h3>
@@ -174,7 +255,7 @@ export default function LeaveCalendarPage() {
             }}
           />
         </div>
-      )}
+      )} */}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { Controller, Get, Post, Body, Param, Patch } from '@nestjs/common';
 import { TicketService } from './ticket.service';
 
 @Controller('helpdesk/tickets')
@@ -24,4 +24,15 @@ export class TicketController {
   addMessage(@Param('id') id: string, @Body() body: { senderId: number; content: string }) {
     return this.ticketService.addMessage(+id, body.senderId, body.content);
   }
+  @Get()
+getAllTickets() {
+  return this.ticketService.getAllTickets();
+}
+@Patch(':id/status')
+updateStatus(
+  @Param('id') id: string,
+  @Body() body: { status: string },
+) {
+  return this.ticketService.updateStatus(+id, body.status);
+}
 }

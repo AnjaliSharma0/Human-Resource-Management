@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 import DarkModeIcon from "@mui/icons-material/DarkMode";
 import LogoutIcon from "@mui/icons-material/Logout";
-import PersonIcon from "@mui/icons-material/Person";
+
 
 export default function Navbar() {
     const router = useRouter();
@@ -26,6 +26,8 @@ export default function Navbar() {
         localStorage.removeItem("token");
         localStorage.removeItem("role");
         router.push("/auth/login");
+         // Redirect to login and force reload
+  window.location.href = "/auth/login";
     };
 
     const goToDashboard = () => {
@@ -41,44 +43,85 @@ export default function Navbar() {
     };
 
     return (
-        <header className="bg-white dark:bg-gray-300 shadow flex justify-between items-center px-6 py-4">
-            <h1
-                className="font-semibold bg-blue-400 hover:bg-blue-900 hover:text-white p-2 m-3 cursor-pointer rounded-lg"
-                onClick={goToDashboard}
-            >
-                Dashboard
-            </h1>
+        <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/70 border-b border-gray-200 shadow-sm px-6 py-3 flex justify-between items-center">
 
-            <div className="flex items-center gap-4 relative">
-                <button onClick={toggleDark}>
-                    <DarkModeIcon />
-                </button>
+  {/* 🔹 Left: Logo */}
+  <div
+    onClick={goToDashboard}
+    className="flex items-center gap-2 cursor-pointer group"
+  >
+    <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-500 to-indigo-500 flex items-center justify-center text-white font-bold shadow-md group-hover:scale-110 transition">
+      H
+    </div>
+    <span className="text-lg font-semibold text-gray-800 group-hover:text-blue-600 transition">
+      HRMS
+    </span>
+  </div>
 
-                <button onClick={() => setOpen(!open)}>
-                    <PersonIcon />
-                </button>
+  {/* 🔹 Right Section */}
+  <div className="flex items-center gap-4 relative">
 
-                {open && (
-                    <div className="absolute right-0 top-10 bg-white dark:bg-gray-800 shadow-lg rounded-xl p-3 w-44 z-50">
-                        {/* Profile Link */}
-                   <p
-  className="text-sm text-gray-800 dark:text-gray-200 mb-2 px-3 py-2 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-  onClick={() => router.push("/employees/dashboard/profile")}
->
-  Profile
-</p>
-                        {/* Logout Button */}
-                        <button
-                            onClick={logout}
-                            className="flex items-center gap-2 text-red-500 bg-red-50 dark:bg-red-700 dark:text-red-100 hover:bg-red-100 dark:hover:bg-red-600 px-3 py-2 rounded-lg w-full transition-colors duration-200"
-                        >
-                            <LogoutIcon className="h-5 w-5" />
-                            Logout
-                        </button>
-                    </div>
+    {/* 🌙 Dark Mode */}
+    <button
+      onClick={toggleDark}
+      className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 
+                 hover:scale-110 active:scale-95 transition-all duration-200 shadow-sm"
+    >
+      <DarkModeIcon className="text-gray-600" />
+    </button>
 
-                )}
-            </div>
-        </header>
+    {/* 👤 Profile */}
+    <button
+      onClick={() => setOpen(!open)}
+      className="flex items-center gap-2 px-3 py-1.5 rounded-full 
+                 bg-gradient-to-r from-gray-100 to-gray-200 
+                 hover:from-blue-50 hover:to-indigo-50 
+                 hover:shadow-md transition-all duration-300"
+    >
+      {/* Avatar */}
+      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-500 
+                      text-white flex items-center justify-center text-sm font-bold shadow">
+        {role?.charAt(0)?.toUpperCase() || "U"}
+      </div>
+
+      <span className="text-sm text-gray-700 capitalize font-medium">
+        {role || "User"}
+      </span>
+    </button>
+
+    {/* 🔻 Dropdown */}
+    {open && (
+      <div className="absolute right-0 top-14 w-52 
+                      bg-white/80 backdrop-blur-xl border border-gray-200 
+                      rounded-2xl shadow-xl p-2 
+                      animate-[fadeIn_0.2s_ease-in-out]">
+
+        {/* Profile */}
+        <button
+          onClick={() => router.push("/employees/dashboard/profile")}
+          className="w-full flex items-center gap-2 px-4 py-2 rounded-xl 
+                     text-gray-700 hover:bg-blue-50 hover:text-blue-600 
+                     transition-all duration-200"
+        >
+          👤 Profile
+        </button>
+
+        {/* Divider */}
+        <div className="h-px bg-gray-200 my-2"></div>
+
+        {/* Logout */}
+        <button
+          onClick={logout}
+          className="w-full flex items-center gap-2 px-4 py-2 rounded-xl 
+                     text-red-500 hover:bg-red-50 
+                     transition-all duration-200"
+        >
+          <LogoutIcon fontSize="small" />
+          Logout
+        </button>
+      </div>
+    )}
+  </div>
+</header>
     );
 }

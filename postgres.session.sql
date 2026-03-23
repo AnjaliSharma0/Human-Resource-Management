@@ -10,4 +10,4 @@
 --       (2,6)
 
 
-  SELECT * FROM 
+  SELECT * FROM "employee"

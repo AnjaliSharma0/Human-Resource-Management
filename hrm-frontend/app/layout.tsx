@@ -23,9 +23,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        {showSidebar? (
-           <Layout>
-           {children}
         <Toaster
           position="top-right"
           toastOptions={{
@@ -35,6 +32,9 @@ export default function RootLayout({
             },
           }}
         />
+        {showSidebar? (
+           <Layout>
+           {children}
         </Layout>
         ):(
         <div className="min-h-screen">{children}</div>

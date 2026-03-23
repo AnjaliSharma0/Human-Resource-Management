@@ -46,6 +46,9 @@ export class Payroll {
   @Column("decimal")
   net_salary: number;
 
+  @Column({ type: "decimal", default: 0 })
+gross_salary: number;
+
   @Column({ default: "processed" })
   status: string;
 }

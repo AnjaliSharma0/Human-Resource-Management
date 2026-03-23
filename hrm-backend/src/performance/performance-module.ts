@@ -5,11 +5,12 @@ import { PerformanceController } from "./performance.controller";
 import { Review } from "./review.entity";
 import { Goal } from "./goal.entity";
 import { Employee } from "../employee/entities/employee-entity";
+import { PerformanceGateway } from "./performance.gateway";
 
 
 @Module({
     imports:[TypeOrmModule.forFeature([Review, Goal, Employee])],
-    providers:[PerformanceService],
+    providers:[PerformanceService, PerformanceGateway],
     controllers:[PerformanceController]
 })
 export class PerformanceModule{}

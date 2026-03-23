@@ -16,4 +16,7 @@ export class FaqService {
     const faq = this.faqRepo.create({ question, answer });
     return this.faqRepo.save(faq);
   }
+  remove(id: number) {
+  return this.faqRepo.delete(id);
+}
 }

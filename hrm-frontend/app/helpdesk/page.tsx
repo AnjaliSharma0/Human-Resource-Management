@@ -1,53 +1,131 @@
 'use client';
+
 import { useEffect, useState } from 'react';
+import useAuth from '@/app/src/hook/useAuth';
+import { getTickets, getAllTickets, getFAQs } from '@/app/src/services/helpdesk';
 
-import { Button, TextField } from '@mui/material';
-import api from '../src/services/api';
-import TicketCard from '../components/helpdesk/TicketCard';
+import Sidebar from '@/app/components/helpdesk/Sidebar';
+import ChatPanel from '@/app/components/helpdesk/ChatPanel';
+import CreateTicketModal from '@/app/components/helpdesk/ChatModel';
 
-export default function TicketsPage() {
-  const [tickets, setTickets] = useState([]);
-  const [subject, setSubject] = useState('');
-  const userId = 1; // replace with logged-in user
+export default function HelpdeskPage() {
+  const user = useAuth();
+
+  const [tickets, setTickets] = useState<any[]>([]);
+  const [selectedTicket, setSelectedTicket] = useState<any>(null);
+  const [faqs, setFaqs] = useState<any[]>([]);
+  const [view, setView] = useState<'tickets' | 'faq'>('tickets');
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    loadTickets();
-  }, []);
+    if (user) {
+      loadTickets();
+      loadFAQs();
+    }
+  }, [user]);
 
-  const loadTickets = () => {
-    api.get(`/helpdesk/tickets/user/${userId}`).then(res => setTickets(res.data));
+  const loadTickets = async () => {
+    let res;
+
+    if (user!.role === 'admin' || user!.role === 'manager') {
+      res = await getAllTickets();
+    } else {
+      res = await getTickets(user!.id);
+    }
+
+    setTickets(res.data);
   };
 
-  const createTicket = async () => {
-    if (!subject) return;
-    await api.post('/helpdesk/tickets', { userId, subject });
-    setSubject('');
-    loadTickets();
+  const loadFAQs = async () => {
+    const res = await getFAQs();
+    setFaqs(res.data);
   };
+
+  if (!user) return null;
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <h1 className="text-3xl font-bold mb-6">My Tickets</h1>
+    <div className="flex h-screen">
 
-      <div className="flex gap-2 mb-6">
-        <TextField
-          label="New Ticket Subject"
-          variant="outlined"
-          size="small"
-          value={subject}
-          onChange={(e) => setSubject(e.target.value)}
-          className="flex-1"
-        />
-        <Button variant="contained" color="primary" onClick={createTicket}>
-          Submit
-        </Button>
+      {/* 🔹 LEFT SIDEBAR */}
+      <Sidebar
+        tickets={tickets}
+        onSelect={(t: any) => {
+          setSelectedTicket(t);
+          setView('tickets');
+        }}
+        onCreate={() => setOpen(true)}
+        role={user.role}
+      />
+
+      {/* 🔹 RIGHT CONTENT */}
+      <div className="flex-1 flex flex-col">
+
+        {/* 🔝 TOP BAR */}
+        <div className="flex justify-between items-center p-3 border-b bg-gray-50">
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => setView('tickets')}
+              className={`px-3 py-1 rounded ${
+                view === 'tickets' ? 'bg-blue-600 text-white' : 'bg-gray-200'
+              }`}
+            >
+              Tickets
+            </button>
+
+            <button
+              onClick={() => setView('faq')}
+              className={`px-3 py-1 rounded ${
+                view === 'faq' ? 'bg-blue-600 text-white' : 'bg-gray-200'
+              }`}
+            >
+              FAQs
+            </button>
+          </div>
+
+        </div>
+
+        {/* 💬 CHAT VIEW */}
+        {view === 'tickets' && (
+          <>
+            {selectedTicket ? (
+              <ChatPanel ticket={selectedTicket} user={user} />
+            ) : (
+              <div className="flex items-center justify-center h-full text-gray-400">
+                Select a ticket
+              </div>
+            )}
+          </>
+        )}
+
+        {/* ❓ FAQ VIEW */}
+        {view === 'faq' && (
+          <div className="p-6 overflow-y-auto">
+
+            <h2 className="text-2xl font-bold mb-4">FAQs</h2>
+
+            <div className="space-y-4">
+              {faqs.map((f) => (
+                <div key={f.id} className="border p-4 rounded shadow-sm">
+                  <h3 className="font-semibold">{f.question}</h3>
+                  <p className="text-gray-600 mt-2">{f.answer}</p>
+                </div>
+              ))}
+            </div>
+
+          </div>
+        )}
+
       </div>
 
-      <div className="grid gap-4">
-        {tickets.map((t: any) => (
-          <TicketCard key={t.id} ticket={t} />
-        ))}
-      </div>
+      {/* ➕ CREATE TICKET MODAL */}
+      <CreateTicketModal
+        open={open}
+        onClose={() => setOpen(false)}
+        user={user}
+        reload={loadTickets}
+      />
+
     </div>
   );
 }

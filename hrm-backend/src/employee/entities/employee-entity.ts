@@ -83,7 +83,7 @@ activationExpires: Date | null;
   manager: Employee;
 
 
-   @ManyToOne(() => SalaryGrade, { nullable: true })
+   @ManyToOne(() => SalaryGrade, { eager: true  })
   salaryGrade: SalaryGrade;
 
   @OneToOne(()=> User)

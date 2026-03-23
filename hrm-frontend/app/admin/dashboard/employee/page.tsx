@@ -83,6 +83,13 @@ export default function EmployeePage() {
           <AddIcon />
           Add Employee
         </button>
+      <button  className="flex items-center justify-center
+       gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 
+       py-2 rounded-lg w-md sm:w-auto transition" 
+       onClick={()=> router.push("/admin/salary-grade-assign")}>
+        <AddIcon/>
+        Assign Salary Grade</button>
+       
       </div>
 
       {/* EMPLOYEE GRID */}

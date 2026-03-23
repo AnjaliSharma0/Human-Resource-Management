@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, MenuItem } from "@mui/material";
 import api from "@/app/src/services/api";
+import Loading from "../Loading";
 
 type Props = {
   open: boolean;
@@ -14,20 +15,21 @@ type Props = {
 export default function AdminOfferLetterModal({ open, onClose, onUploaded, candidates }: Props) {
   const [candidateId, setCandidateId] = useState<number | "">("");
   const [file, setFile] = useState<File | null>(null);
-
-  const handleUpload = async () => {
+  const [loading, setLoading]= useState(false)
+   const handleUpload = async () => {
     if (!candidateId || !file) {
       alert("Candidate and file are required");
       return;
     }
 
+    setLoading(true);
     try {
-      const formData = new FormData();
-      formData.append("candidateId", String(candidateId));
-      formData.append("file", file);
+    const formData = new FormData();
+formData.append('offerFile', file);
+formData.append('candidateId', candidateId.toString());
 
-      await api.post("/offer-letters", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+await api.post('/offer-letters/upload', formData, {
+  headers: { 'Content-Type': 'multipart/form-data' },
       });
 
       onUploaded();
@@ -37,9 +39,36 @@ export default function AdminOfferLetterModal({ open, onClose, onUploaded, candi
     } catch (err: any) {
       console.error(err.response?.data || err);
       alert("Failed to upload offer letter");
+    } finally {
+      setLoading(false);
     }
   };
 
+  // const handleUpload = async () => {
+  //   if (!candidateId || !file) {
+  //     alert("Candidate and file are required");
+  //     return;
+  //   }
+
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append("candidateId", String(candidateId));
+  //     formData.append("file", file);
+
+  //     await api.post("/offer-letters", formData, {
+  //       headers: { "Content-Type": "multipart/form-data" },
+  //     });
+
+  //     onUploaded();
+  //     onClose();
+  //     setCandidateId("");
+  //     setFile(null);
+  //   } catch (err: any) {
+  //     console.error(err.response?.data || err);
+  //     alert("Failed to upload offer letter");
+  //   }
+  // };
+ 
   return (
     <Dialog open={open} onClose={onClose}>
       <DialogTitle>Upload Offer Letter</DialogTitle>
@@ -53,17 +82,21 @@ export default function AdminOfferLetterModal({ open, onClose, onUploaded, candi
         >
           {candidates.map((c) => (
             <MenuItem key={c.id} value={c.id}>
-              {c.firstName} {c.lastName}
+              {c.id} 
             </MenuItem>
           ))}
         </TextField>
 
-        <input type="file" onChange={(e) => e.target.files && setFile(e.target.files[0])} />
+         <input
+          type="file"
+          accept=".pdf,.doc,.docx"
+          onChange={(e) => setFile(e.target.files?.[0] || null)}
+        />
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel</Button>
         <Button onClick={handleUpload} variant="contained">
-          Upload
+           {loading ? "Uploading..." : "Upload Offer Letter"}
         </Button>
       </DialogActions>
     </Dialog>

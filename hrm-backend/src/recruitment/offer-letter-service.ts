@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Body, Injectable, NotFoundException, UploadedFile } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
@@ -45,4 +45,28 @@ export class OfferLetterService {
     if (status === OfferStatus.ACCEPTED) offer.acceptedAt = new Date();
     return this.repo.save(offer);
   }
+
+  async uploadOffer(
+    @UploadedFile() file:Express.Multer.File,
+    @Body('candidateId') candidateId:string,
+  ){
+    if(!file) throw new Error('File missing')
+      if(!candidateId) throw new Error('Candidate missing')
+
+      const offerFileUrl = `/uploads/${file.filename}`
+
+      const offer= this.repo.create({
+        candidateId:Number(candidateId),
+        offerFileUrl,
+        status: OfferStatus.SENT,
+      })
+      
+  return this.repo.save(offer);
+  }
+  async deleteOffer(id:number){
+    const offer = await this.findOne(id);
+    if(!offer)  throw new BadRequestException("Offer not found")
+      return this.repo.remove(offer)
+  }
+
 }

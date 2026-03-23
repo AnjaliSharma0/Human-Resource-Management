@@ -1,5 +1,5 @@
 // ticket.service.ts
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Ticket } from './ticket.entity';
@@ -37,6 +37,25 @@ export class TicketService {
       content,
     });
     return this.messageRepo.save(message);
+  }
+  async getAllTickets() {
+  return this.ticketRepo.find({
+    relations: ['user'],
+    order: { created_at: 'DESC' },
+  });
+}
+  async updateStatus(ticketId: number, status: string) {
+    const ticket = await this.ticketRepo.findOne({
+      where: { id: ticketId },
+    });
+
+    if (!ticket) {
+      throw new NotFoundException('Ticket not found');
+    }
+
+    ticket.status = status;
+
+    return this.ticketRepo.save(ticket);
   }
 }
 

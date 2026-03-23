@@ -244,6 +244,22 @@ export class EmployeeService {
     }
   }
 
+async assignSalaryGrade(empId: number, gradeId: number) {
+  const employee = await this.employeeRepo.findOne({
+    where: { id: empId },
+  });
+
+  const grade = await this.salaryGradeRepo.findOne({
+    where: { id: gradeId },
+  });
+
+  if (!employee) throw new Error("Employee not found");
+  if (!grade) throw new Error("Salary grade not found");
+
+  employee.salaryGrade = grade;
+
+  return this.employeeRepo.save(employee);
+}
 }
 
 

@@ -214,9 +214,15 @@ export default function LeaveCalendarPage() {
   return (
     <div className="p-4 sm:p-6 md:p-8 max-w-[1400px] mx-auto">
 
-      <h2 className="text-xl sm:text-2xl font-semibold mb-4">
-        Leave Management
-      </h2>
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-semibold mb-1">
+            Leave Management
+          </h2>
+          <p className="text-gray-500 text-sm text-center">Manage employee leaves & holidays</p>
+        </div>
+      </div>
 
       {/* Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-2 mb-6">
@@ -224,9 +230,9 @@ export default function LeaveCalendarPage() {
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-3 py-2 rounded whitespace-nowrap text-sm ${
-              tab === t ? "bg-blue-600 text-white" : "bg-gray-200"
-            }`}
+            className={`px-3 py-2 rounded-lg whitespace-nowrap text-sm font-medium ${
+              tab === t ? "bg-blue-600 text-white shadow" : "bg-gray-200 hover:bg-gray-300"
+            } transition`}
           >
             {t}
           </button>
@@ -241,17 +247,20 @@ export default function LeaveCalendarPage() {
               placeholder="Filter by employee"
               value={employeeFilter}
               onChange={(e) => setEmployeeFilter(e.target.value)}
-              className="border p-2 rounded w-full"
+              className="border p-2 rounded w-full sm:w-1/2"
             />
             <input
               placeholder="Filter by leave type"
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value)}
-              className="border p-2 rounded w-full"
+              className="border p-2 rounded w-full sm:w-1/2"
             />
           </div>
 
-          <Calendar tileContent={tileContent} />
+          <Calendar
+            tileContent={tileContent}
+            className="rounded-xl border border-gray-200 shadow-sm"
+          />
         </div>
       )}
 
@@ -282,41 +291,39 @@ export default function LeaveCalendarPage() {
       {/* Modal */}
       {selectedLeave && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50">
-          <div className="bg-white p-6 rounded-xl w-full max-w-md">
+          <div className="bg-white p-6 rounded-2xl w-full max-w-md shadow-lg">
 
-            <h3 className="font-semibold mb-3">Leave Request</h3>
+            <h3 className="font-semibold mb-3 text-lg">Leave Request</h3>
 
-            <p><b>Employee:</b> {selectedLeave.employee?.firstName}</p>
+            <p><b>Employee:</b> {selectedLeave.employee?.firstName} {selectedLeave.employee?.lastName}</p>
             <p><b>Type:</b> {selectedLeave.leaveType}</p>
-            <p><b>Status:</b> {selectedLeave.leaveStatus}</p>
+            <p><b>Status:</b> <span className={`font-medium ${selectedLeave.leaveStatus === 'approved' ? 'text-green-600' : selectedLeave.leaveStatus === 'pending' ? 'text-yellow-500' : 'text-red-600'}`}>{selectedLeave.leaveStatus}</span></p>
 
-            <div className="flex flex-wrap gap-2 mt-4">
-
+            <div className="flex flex-wrap gap-2 mt-4 items-center">
               {selectedLeave.leaveStatus === "pending" && (
                 <>
                   <button
                     onClick={approveLeave}
-                    className="bg-green-500 text-white px-3 py-1 rounded w-full sm:w-auto"
+                    className="bg-green-500 text-white px-4 py-2 rounded-lg w-full sm:w-auto hover:bg-green-600 transition"
                   >
                     Approve
                   </button>
                   <button
                     onClick={rejectLeave}
-                    className="bg-red-500 text-white px-3 py-1 rounded w-full sm:w-auto"
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg w-full sm:w-auto hover:bg-red-600 transition"
                   >
                     Reject
                   </button>
                 </>
               )}
-
               <button
                 onClick={() => setSelectedLeave(null)}
-                className="ml-auto text-gray-500"
+                className="ml-auto text-gray-500 px-4 py-2 rounded hover:bg-gray-100 transition"
               >
                 Close
               </button>
-
             </div>
+
           </div>
         </div>
       )}
@@ -326,8 +333,8 @@ export default function LeaveCalendarPage() {
 
 function Stat({ title, value, bg }: any) {
   return (
-    <div className={`${bg || "bg-white"} p-4 rounded shadow`}>
-      <p className="text-sm">{title}</p>
+    <div className={`${bg || "bg-white"} p-4 rounded-xl shadow text-center`}>
+      <p className="text-sm text-gray-500">{title}</p>
       <h2 className="text-xl font-bold">{value}</h2>
     </div>
   );

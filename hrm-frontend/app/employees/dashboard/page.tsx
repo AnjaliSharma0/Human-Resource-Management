@@ -14,12 +14,17 @@ import {
 } from "@mui/material";
 import toast from "react-hot-toast";
 import {
+  AssignmentAdd,
   Description,
+  DescriptionOutlined,
+  Event,
   Info,
+  People,
   Person2,
   WorkOutline,
 } from "@mui/icons-material";
 import Loading from "@/app/components/Loading";
+import { WorkflowIcon } from "lucide-react";
 
 type Tab =
   | "Department Employees"
@@ -102,38 +107,85 @@ export default function EmployeeDashboard() {
       console.error(err);
     }
   };
-
+const handleUpdateOfferStatus = async (offerId: number, status: "accepted" | "rejected") => {
+  try {
+    await api.patch(`/offer-letters/${offerId}`, { status });
+    toast.success(`Offer ${status} successfully ✅`);
+    loadData(); // refresh table
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to update offer status ❌");
+  }
+};
   const hasApplied = (jobId: number) =>
     myApplications.some((app) => app?.appliedFor?.id === jobId);
 
   if (loading) return <Loading message="Loading..." size="lg" />;
 
+  const tabs = [
+    { label: "Employees", value: "Department Employees", icon: <People fontSize="small" /> },
+    { label: "Jobs", value: "Job Postings", icon: <WorkflowIcon fontSize="small" /> },
+    { label: "Applications", value: "My Applications", icon: <AssignmentAdd fontSize="small" /> },
+    { label: "Interviews", value: "Interviews", icon: <Event fontSize="small" /> },
+    { label: "Offers", value: "Offer Letters", icon: <DescriptionOutlined fontSize="small" /> },
+  ];
   return (
     <div className="p-4 md:p-6 max-w-7xl mx-auto space-y-6">
-      <h1 className="text-2xl md:text-3xl font-bold">
-        Employee Dashboard
-      </h1>
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+          Employee Dashboard
+        </h1>
 
-      {/* Tabs */}
-      <div className="overflow-x-auto">
-        <div className="flex space-x-2 md:space-x-4 mb-4 min-w-max">
-          {[
-            "Department Employees",
-            "Job Postings",
-            "My Applications",
-            "Interviews",
-            "Offer Letters",
-          ].map((tab) => (
+        <p className="text-sm text-gray-500">
+          Manage jobs, applications & interviews
+        </p>
+      </div>
+
+
+
+      <div className="relative">
+        <div
+          id="tab-container"
+          className="flex gap-2 overflow-x-auto scrollbar-hide py-2 px-1"
+        >
+          {tabs.map((tab) => (
             <button
-              key={tab}
-              className={`px-4 py-2 text-sm md:text-base rounded whitespace-nowrap ${
-                activeTab === tab
-                  ? "bg-indigo-500 text-white"
-                  : "bg-gray-200 hover:bg-gray-300"
-              }`}
-              onClick={() => setActiveTab(tab as Tab)}
+              key={tab.value}
+              onClick={(e) => {
+                setActiveTab(tab.value as Tab);
+
+                // 🔥 auto scroll active tab into view
+                (e.currentTarget as HTMLElement).scrollIntoView({
+                  behavior: "smooth",
+                  inline: "center",
+                  block: "nearest",
+                });
+              }}
+              className={`
+          relative flex items-center gap-2 px-4 py-2 rounded-full 
+          text-sm whitespace-nowrap flex-shrink-0
+          transition-all duration-300
+
+          ${activeTab === tab.value
+                  ? "text-white scale-105"
+                  : "text-gray-600 hover:bg-gray-100"
+                }
+        `}
             >
-              {tab}
+              {/* Active Background */}
+              {activeTab === tab.value && (
+                <span
+                  className="absolute inset-0 bg-gradient-to-r 
+                       from-indigo-500 to-blue-500 
+                       rounded-full shadow-md transition-all duration-300"
+                />
+              )}
+
+              {/* Content */}
+              <span className="relative z-10 flex items-center gap-1 font-medium">
+                {tab.icon}
+                {tab.label}
+              </span>
             </button>
           ))}
         </div>
@@ -146,19 +198,32 @@ export default function EmployeeDashboard() {
             <div
               key={emp.id}
               onClick={() => router.push(`/employee/${emp.id}`)}
-              className="bg-white shadow-md rounded-xl p-4 text-center hover:shadow-lg cursor-pointer"
+              className="bg-white/80 backdrop-blur border border-gray-200 
+             rounded-2xl p-4 text-center 
+             hover:shadow-xl hover:-translate-y-1 
+             transition-all duration-300 cursor-pointer"
             >
-              <UserCircleIcon className="h-14 w-14 mx-auto text-gray-400 mb-2" />
-              <h2 className="font-semibold">
+              <div className="w-12 h-12 mx-auto mb-2 rounded-full 
+                  bg-gradient-to-tr from-indigo-500 to-blue-500 
+                  text-white flex items-center justify-center font-bold shadow">
+                {emp.firstName?.charAt(0)}
+              </div>
+
+              <h2 className="font-semibold text-gray-800">
                 {emp.firstName} {emp.lastName}
               </h2>
+
               <p className="text-sm text-gray-500">
                 {emp.designation?.title}
               </p>
-              <p className="text-sm text-gray-500">
+
+              <p className="text-xs text-gray-400 mt-1">
                 {emp.department?.name}
               </p>
-              <p className="text-xs text-gray-400">{emp.email}</p>
+
+              <p className="text-xs text-gray-400 truncate">
+                {emp.email}
+              </p>
             </div>
           ))}
         </div>
@@ -170,16 +235,21 @@ export default function EmployeeDashboard() {
           {jobPostings.map((job) => (
             <div
               key={job.id}
-              className="bg-white shadow-md rounded-xl p-4 flex flex-col justify-between hover:shadow-lg"
+              className="bg-white border border-gray-200 rounded-2xl p-4 
+             flex flex-col justify-between 
+             hover:shadow-lg hover:-translate-y-1 
+             transition-all duration-300"
             >
               <div>
-                <h3 className="font-semibold text-lg">
+                <h3 className="font-semibold text-lg text-gray-800">
                   {job.jobRequisition.title}
                 </h3>
+
                 <p className="text-sm text-gray-500">
                   {job.jobRequisition.department}
                 </p>
-                <p className="text-xs text-gray-400">
+
+                <p className="text-xs text-gray-400 mt-1">
                   {new Date(job.postingStartDate).toLocaleDateString()} -{" "}
                   {new Date(job.postingEndDate).toLocaleDateString()}
                 </p>
@@ -187,17 +257,18 @@ export default function EmployeeDashboard() {
 
               <div className="mt-4">
                 {hasApplied(job.id) ? (
-                  <span className="block text-center px-3 py-2 text-xs bg-green-100 text-green-700 rounded-full">
-                    Applied
+                  <span className="block text-center px-3 py-2 text-xs 
+                       bg-green-100 text-green-700 rounded-full">
+                    ✅ Applied
                   </span>
                 ) : (
                   <button
-                    onClick={() =>
-                      router.push(`/admin/candidate/apply/${job.id}`)
-                    }
-                    className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg text-sm"
+                    onClick={() => setApplyJobId(job.id)}
+                    className="w-full bg-indigo-600 hover:bg-indigo-700 
+                   text-white py-2 rounded-lg text-sm 
+                   transition-all duration-200"
                   >
-                    Apply
+                    Apply Now
                   </button>
                 )}
               </div>
@@ -214,10 +285,10 @@ export default function EmployeeDashboard() {
             <h2 className="text-lg font-semibold">My Applications</h2>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="min-w-[600px] w-full text-sm">
-              <thead className="bg-gray-100">
-                <tr>
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 text-gray-600 text-xs uppercase">
+                <tr className="border-t hover:bg-gray-50 transition">
                   <th className="p-3 text-left">Job</th>
                   <th className="p-3 text-left">Description</th>
                   <th className="p-3 text-left">Status</th>
@@ -236,7 +307,14 @@ export default function EmployeeDashboard() {
                     </td>
 
                     <td className="p-3">
-                      <span className="px-2 py-1 rounded text-xs bg-gray-200">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium
+                        ${app.status === "selected"
+                          ? "bg-green-100 text-green-700"
+                          : app.status === "rejected"
+                            ? "bg-red-100 text-red-600"
+                            : "bg-yellow-100 text-yellow-700"
+                        }
+                      `}>
                         {app.status}
                       </span>
                     </td>
@@ -249,87 +327,135 @@ export default function EmployeeDashboard() {
       )}
 
       {/* Interviews */}
+      {/* Interviews */}
       {activeTab === "Interviews" && (
         <div className="overflow-x-auto">
-          <table className="min-w-[700px] w-full text-sm border">
-            <thead className="bg-gray-200">
-              <tr>
-                <th className="p-2">Job</th>
-                <th className="p-2">Interviewer</th>
-                <th className="p-2">Date</th>
-                <th className="p-2">Mode</th>
-                <th className="p-2">Feedback</th>
-              </tr>
-            </thead>
-            <tbody>
-              {interviews.map((i) => (
-                <tr key={i.id}>
-                  <td className="p-2">
-                    {i.candidate.jobPosting.jobRequisition.title}
-                  </td>
-                  <td className="p-2">
-                    {i.interviewer.firstName} {i.interviewer.lastName}
-                  </td>
-                  <td className="p-2">
-                    {new Date(i.dateTime).toLocaleString()}
-                  </td>
-                  <td className="p-2">{i.mode}</td>
-                  <td className="p-2">{i.feedback || "-"}</td>
+          {interviews.length === 0 ? (
+            <div className="p-4 text-center text-gray-500">
+              No interviews are scheduled.
+            </div>
+          ) : (
+            <table className="min-w-[700px] w-full text-sm border">
+              <thead className="bg-gray-200">
+                <tr>
+                  <th className="p-2">Job</th>
+                  <th className="p-2">Interviewer</th>
+                  <th className="p-2">Date</th>
+                  <th className="p-2">Mode</th>
+                  <th className="p-2">Feedback</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {interviews.map((i) => (
+                  <tr key={i.id}>
+                    <td className="p-2">{i?.candidate?.jobPosting?.jobRequisition?.title || "-"}</td>
+                    <td className="p-2">
+                      {i?.interviewer ? `${i.interviewer.firstName} ${i.interviewer.lastName}` : "-"}
+                    </td>
+                    <td className="p-2">{i.dateTime ? new Date(i.dateTime).toLocaleString() : "-"}</td>
+                    <td className="p-2">{i.mode || "-"}</td>
+                    <td className="p-2">{i.feedback || "-"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       )}
 
       {/* Offer Letters */}
-      {activeTab === "Offer Letters" && (
-        <div className="overflow-x-auto">
-          <table className="min-w-[600px] w-full text-sm border">
-            <thead className="bg-gray-200">
-              <tr>
-                <th className="p-2">Job</th>
-                <th className="p-2">File</th>
-                <th className="p-2">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              {offerLetters.map((o) => (
-                <tr key={o.id}>
-                  <td className="p-2">
-                    {o.candidate.jobPosting.jobRequisition.title}
-                  </td>
-                  <td className="p-2">
-                    <a
-                      href={o.offerFileUrl}
-                      target="_blank"
-                      className="text-blue-500 underline"
-                    >
-                      Download
-                    </a>
-                  </td>
-                  <td className="p-2">{o.status}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+{activeTab === "Offer Letters" && (
+  <div className="overflow-x-auto">
+    {offerLetters.length === 0 ? (
+      <div className="p-4 text-center text-gray-500">
+        No offer letters are available.
+      </div>
+    ) : (
+      <table className="min-w-[600px] w-full text-sm border">
+        <thead className="bg-gray-200">
+          <tr>
+            <th className="p-2">Job</th>
+            <th className="p-2">File</th>
+            <th className="p-2">Status</th>
+            <th className="p-2">Action</th>
+          </tr>
+        </thead>
+       <tbody>
+  {offerLetters.map((o) => (
+    <tr key={o.id}>
+      <td>{o?.candidate?.jobPosting?.jobRequisition?.title || "-"}</td>
+      <td>
+        {o.offerFileUrl ? (
+          <a href={o.offerFileUrl} target="_blank" className="text-blue-500 underline">
+            Download
+          </a>
+        ) : "-"}
+      </td>
+      <td>
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-medium ${
+            o.status === "selected"
+              ? "bg-green-100 text-green-700"
+              : o.status === "rejected"
+              ? "bg-red-100 text-red-600"
+              : "bg-yellow-100 text-yellow-700"
+          }`}
+        >
+          {o.status}
+        </span>
+      </td>
+      <td>
+        {o.status === "sent" ? (
+          <div className="flex gap-2">
+            <button
+              onClick={() => handleUpdateOfferStatus(o.id, "accepted")}
+              className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+            >
+              Accept
+            </button>
+            <button
+              onClick={() => handleUpdateOfferStatus(o.id, "rejected")}
+              className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
+            >
+              Reject
+            </button>
+          </div>
+        ) : (
+          <div>No action</div>
+        )}
+      </td>
+    </tr>
+  ))}
+</tbody>
+      </table>
+    )}
+  </div>
+)}
+    
+      <Dialog
+        open={!!applyJobId}
+        onClose={() => setApplyJobId(null)}
+        PaperProps={{
+          className: "rounded-2xl p-2"
+        }}
+      >
+        <DialogTitle className="font-semibold text-gray-800">
+          Apply for Job
+        </DialogTitle>
 
-      {/* Apply Modal */}
-      <Dialog open={!!applyJobId} onClose={() => setApplyJobId(null)}>
-        <DialogTitle>Apply for Job</DialogTitle>
         <DialogContent>
           <TextField
             fullWidth
             type="file"
             inputProps={{ accept: ".pdf,.doc,.docx" }}
+            className="mt-2"
             onChange={(e) => {
               const target = e.target as HTMLInputElement;
               setResumeFile(target.files ? target.files[0] : null);
             }}
           />
         </DialogContent>
+
         <DialogActions>
           <Button onClick={() => setApplyJobId(null)}>Cancel</Button>
           <Button variant="contained" onClick={handleApplyJob}>

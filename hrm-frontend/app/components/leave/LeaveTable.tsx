@@ -56,9 +56,9 @@ export default function LeaveTable({
   }
 
   return (
-    <div className="overflow-x-auto border rounded-xl shadow-sm">
+    <div className=" bg-white hover:bg-gray-200 overflow-x-auto border rounded-xl shadow-sm">
       <table className="min-w-full text-sm">
-        <thead className="bg-gray-50 text-gray-700">
+        <thead className="bg-gray-50 text-gray-700 bg-gray-300">
           <tr>
             <th className="px-4 py-3 text-left font-semibold">Employee</th>
             <th className="px-4 py-3 text-left font-semibold">Leave Type</th>

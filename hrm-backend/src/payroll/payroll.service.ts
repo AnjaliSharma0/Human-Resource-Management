@@ -1,5 +1,4 @@
-// src/payroll/payroll.service.ts
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository, DeepPartial } from "typeorm";
 
@@ -8,7 +7,7 @@ import { Employee } from "../employee/entities/employee-entity";
 
 import * as fs from "fs";
 import * as path from "path";
-import * as PDFDocument from "pdfkit";
+import * as PDFKit from "pdfkit";
 import { Parser } from "json2csv";
 import { Payroll } from "./payroll.entity";
 import { CreatePayrollDto } from "./dto/payroll.dto";
@@ -33,6 +32,17 @@ export class PayrollService {
     });
     if (!employee) throw new NotFoundException("Employee not found.");
 
+    const existing = await this.payrollRepo.findOne({
+  where: {
+    employee: { id: dto.employeeId },
+    month: dto.month,
+    year: dto.year,
+  },
+});
+
+if (existing) {
+ throw new BadRequestException("Payroll already generated for this month");
+}
     const basic = dto.basic ?? employee.salaryGrade?.basic ?? 0;
     const hra = dto.hra ?? employee.salaryGrade?.hra ?? 0;
     const allowances = dto.allowances ?? employee.salaryGrade?.allowances ?? 0;
@@ -43,7 +53,10 @@ export class PayrollService {
     const bonus = dto.bonus ?? 0;
     const arrears = dto.arrears ?? 0;
 
-    const net_salary = basic + hra + allowances + bonus + arrears - deductions - pf - esi - tax;
+   const gross_salary = basic + hra + allowances + bonus + arrears;
+
+const net_salary =
+  gross_salary - deductions - pf - esi - tax;
 
     const payrollData: DeepPartial<Payroll> = {
       employee,
@@ -58,6 +71,7 @@ export class PayrollService {
       tax,
       bonus,
       arrears,
+      gross_salary,
       net_salary,
       status: "processed",
     };
@@ -94,32 +108,53 @@ export class PayrollService {
 }
 
   /** Generate payslip PDF for single payroll */
-  async generatePayslip(payrollId: number) {
-    const payroll = await this.findOne(payrollId);
-    if (!payroll) throw new NotFoundException("Payroll not found.");
+ /** Generate payslip PDF for single payroll */
+async generatePayslip(payrollId: number) {
+  const payroll = await this.findOne(payrollId);
+  if (!payroll) throw new NotFoundException("Payroll not found.");
 
-    const doc = new PDFDocument();
-    const filePath = path.join(__dirname, `../../uploads/payslip-${payrollId}.pdf`);
-    doc.pipe(fs.createWriteStream(filePath));
+ const PDFDocument = require("pdfkit");
+ const doc = new PDFDocument();
 
-    doc.fontSize(20).text("Payslip", { align: "center" });
-    doc.moveDown();
-    doc.fontSize(14).text(`Employee: ${payroll.employee.firstName} ${payroll.employee.lastName}`);
-    doc.text(`Month/Year: ${payroll.month}/${payroll.year}`);
-    doc.text(`Basic: ${payroll.basic}`);
-    doc.text(`HRA: ${payroll.hra}`);
-    doc.text(`Allowances: ${payroll.allowances}`);
-    doc.text(`Deductions: ${payroll.deductions}`);
-    doc.text(`PF: ${payroll.pf}`);
-    doc.text(`ESI: ${payroll.esi}`);
-    doc.text(`Tax: ${payroll.tax}`);
-    doc.text(`Bonus: ${payroll.bonus}`);
-    doc.text(`Arrears: ${payroll.arrears}`);
-    doc.text(`Net Salary: ${payroll.net_salary}`);
-    doc.end();
+  const filePath = path.join(__dirname, `../../uploads/payslip-${payrollId}.pdf`);
+  doc.pipe(fs.createWriteStream(filePath));
 
-    return { filePath };
-  }
+  doc.fontSize(20).text("Company Name Pvt Ltd", { align: "center" });
+doc.fontSize(16).text("Salary Payslip", { align: "center" });
+
+doc.moveDown();
+
+doc.fontSize(12).text(`Employee: ${payroll.employee.firstName} ${payroll.employee.lastName}`);
+doc.text(`Month: ${payroll.month}/${payroll.year}`);
+
+doc.moveDown();
+
+doc.text("EARNINGS", { underline: true });
+
+doc.text(`Basic: ₹${payroll.basic}`);
+doc.text(`HRA: ₹${payroll.hra}`);
+doc.text(`Allowances: ₹${payroll.allowances}`);
+doc.text(`Bonus: ₹${payroll.bonus}`);
+doc.text(`Arrears: ₹${payroll.arrears}`);
+
+doc.moveDown();
+
+doc.text("DEDUCTIONS", { underline: true });
+
+doc.text(`PF: ₹${payroll.pf}`);
+doc.text(`ESI: ₹${payroll.esi}`);
+doc.text(`Tax: ₹${payroll.tax}`);
+doc.text(`Other Deductions: ₹${payroll.deductions}`);
+
+doc.moveDown();
+
+doc.text(`Gross Salary: ₹${payroll.gross_salary}`, { bold: true });
+doc.text(`Net Salary: ₹${payroll.net_salary}`, { bold: true });
+
+  doc.end();
+
+  return { filePath };
+}
 
   /** Generate bank advice CSV for all payrolls */
   async generateBankAdvice(month: number, year: number) {
@@ -158,22 +193,31 @@ async generateAll(month: number, year: number) {
     const pf = basic * (emp.salaryGrade.pf_rate ?? 12) / 100;
     const esi = basic * (emp.salaryGrade.esi_rate ?? 1.75) / 100;
     const tax = (basic + hra + allowances) * 0.1;
-    const net_salary = basic + hra + allowances - deductions - pf - esi - tax;
+    const bonus = 0;
+    const arrears = 0;
+
+    const gross_salary = basic + hra + allowances + bonus + arrears;
+
+    const net_salary =
+      gross_salary - deductions - pf - esi - tax;
 
     payrolls.push({
-      employee: emp,
-      month,
-      year,
-      basic,
-      hra,
-      allowances,
-      deductions,
-      pf,
-      esi,
-      tax,
-      net_salary,
-      status: "processed",
-    });
+  employee: emp,
+  month,
+  year,
+  basic,
+  hra,
+  allowances,
+  deductions,
+  pf,
+  esi,
+  tax,
+  bonus,
+  arrears,
+  gross_salary,   // ✅ ADD THIS
+  net_salary,
+  status: "processed",
+});
   }
 
   return this.payrollRepo.save(payrolls);

@@ -17,10 +17,10 @@ export class SkillController {
 //     return this.skillRepo.save(skill);
 //   }
   @Post("employee/:id/add-skill")
-async addSkill(
-  @Param("id") employeeId: number,
-  @Body("skillId") skillId: number
-) {
+    async addSkill(
+      @Param("id") employeeId: number,
+      @Body("skillId") skillId: number
+    ) {
   // 1️⃣ Find employee with existing skills
   const employee = await this.employeerepo.findOne({
     where: { id: employeeId },

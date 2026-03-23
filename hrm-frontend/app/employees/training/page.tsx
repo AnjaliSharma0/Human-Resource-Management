@@ -5,6 +5,7 @@ import api from "@/app/src/services/api";
 import toast from "react-hot-toast";
 import { School, CheckCircle, MessageCircle } from "lucide-react";
 import FeedbackModal from "@/app/components/course/EmployeeFeedback";
+import SkillMatrixChart from "@/app/components/course/SkillMatrixChart";
 
 /* ================= TYPES ================= */
 
@@ -16,6 +17,7 @@ export interface Employee {
 }
 
 export interface Course {
+  status: string;
   id: number;
   title: string;
   description: string;
@@ -34,7 +36,7 @@ export interface Enrollment {
 
 export interface SkillMatrix {
   employeeName: string;
-  skill: string;
+  skills: string;
   proficiency: "Beginner" | "Intermediate" | "Advanced" | "Completed";
 }
 
@@ -87,7 +89,7 @@ export default function EmployeeTraining() {
       const formattedSkills = skillsData
         ? Object.keys(skillsData).map((key) => ({
             employeeName: res.data.name,
-            skill: key,
+            skills: key,
             proficiency: skillsData[key],
           
           }))
@@ -200,7 +202,7 @@ export default function EmployeeTraining() {
                 )}
               </div>
 
-              {enrollment.status !== "pending" && (
+              {enrollment.status === "pending" && (
                 <button
                   className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded flex items-center justify-center gap-2 text-sm"
                   onClick={() => openFeedbackModal(enrollment.id)}
@@ -231,29 +233,32 @@ export default function EmployeeTraining() {
               <tbody>
                 {skills.map((skill, idx) => (
                   <tr key={idx} className="border-t">
-                    <td className="p-3">{skill.skill}</td>
+                    <td className="p-3">{skill.skills}</td>
                     <td className="p-3">
                       <span className="px-2 py-1 rounded bg-indigo-100 text-indigo-600 text-sm">
                         {skill.proficiency}
                       </span>
                     </td>
                   </tr>
+                  
                 ))}
               </tbody>
             </table>
+             
           </div>
 
           {/* MOBILE CARDS */}
-          <div className="sm:hidden space-y-4">
+          <div className="sm:hidden space-y-5 grid grid-cols-3">
             {skills.map((skill, idx) => (
-              <div key={idx} className="bg-white p-4 rounded shadow">
-                <p className="font-semibold">{skill.skill}</p>
+              <div key={idx} className="bg-gray-200 hover:bg-gray-400 p-4 rounded shadow w-24 h-24">
+                <p className="font-semibold">{skill.skills}</p>
                 <p className="text-sm text-indigo-600">
                   {skill.proficiency}
                 </p>
               </div>
             ))}
           </div>
+          <SkillMatrixChart data={skills} />
 
           {skills.length === 0 && (
             <p className="text-gray-500 text-center mt-4">
