@@ -21,108 +21,64 @@ import {
   SelectChangeEvent,
 } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
-import { Edit, Delete, Person } from "@mui/icons-material";
+import { Edit, Delete } from "@mui/icons-material";
 import api from "@/app/src/services/api";
 import { useRouter } from "next/navigation";
 
+import { Person, ExpandMore, ExpandLess } from "@mui/icons-material";
 
 // ---------- Recursive OrgNode ----------
 const OrgNode = ({ employee, employees }: { employee: any; employees: any[] }) => {
   const subs = employees.filter((e) => e.manager?.id === employee.id);
-
+  const [open, setOpen] = useState(true);
 
 
   return (
- <div className="relative ml-0 md:ml-8 mt-4">
-      {/* Vertical connector line */}
-      {subs.length > 0 && (
-        <div className="absolute left-4 top-12 bottom-0 w-px bg-gray-300"></div>
-      )}
+    // ---------- Recursive OrgNode (Fixed) ----------
 
+
+    <div className="flex flex-col items-center mt-4 min-w-[180px]">
       {/* Employee Card */}
       <Paper
-        className="p-3 mb-3 rounded-xl shadow-sm hover:shadow-lg transition-all duration-200 cursor-pointer bg-white border border-gray-200"
-        sx={{ borderLeft: "4px solid #3b82f6" }}
+        className="p-3 mb-2 rounded-xl shadow-sm hover:shadow-lg transition-all duration-200 cursor-pointer bg-white border border-gray-200 text-center"
+        sx={{ borderLeft: "4px solid #3b82f6", minWidth: 180 }}
       >
-        <div className="flex items-center gap-3">
-          {/* Avatar Icon */}
-          <div className="bg-blue-100 p-2 rounded-full flex items-center justify-center">
+        <div className="flex flex-col items-center gap-2">
+          <div className="bg-blue-100 p-3 rounded-full flex items-center justify-center">
             <Person className="text-blue-600" />
           </div>
+          <Typography variant="subtitle1" className="font-semibold text-gray-800">
+            {employee.firstName} {employee.lastName}
+          </Typography>
+          <Typography variant="body2" className="text-gray-600">
+            {employee.designation?.title}
+          </Typography>
+          <Typography variant="caption" className="text-gray-400">
+            {employee.department?.name} • {employee.department?.location}
+          </Typography>
+          <Typography variant="caption" className="text-gray-400">
+            ({employee.user.role.toUpperCase()})
+          </Typography>
 
-          {/* Employee Info */}
-          <div className="flex-1">
-            <Typography variant="subtitle1" className="font-semibold text-gray-800">
-              {employee.firstName} {employee.lastName}
-            </Typography>
-
-            <Typography variant="body2" className="text-gray-600">
-              {employee.designation?.title}
-            </Typography>
-
-            <Typography variant="caption" className="text-gray-400">
-              {employee.department?.name} • {employee.department?.location}
-            </Typography>
-
-            <Typography variant="caption" className="text-gray-400">
-              ({employee.user.role.toUpperCase()})
-            </Typography>
-          </div>
+          {/* Toggle Button if has subordinates */}
+          {subs.length > 0 && (
+            <IconButton size="small" onClick={() => setOpen(!open)}>
+              {open ? <ExpandLess /> : <ExpandMore />}
+            </IconButton>
+          )}
         </div>
       </Paper>
 
       {/* Subordinates */}
-      {subs.length > 0 && (
-        <div className="ml-8 border-l-2 border-gray-300 pl-6">
+      {subs.length > 0 && open && (
+        <div className="flex flex-col items-center ml-0 md:ml-4 border-l-2 border-gray-300 pl-4 w-full">
           {subs.map((sub) => (
             <OrgNode key={sub.id} employee={sub} employees={employees} />
           ))}
         </div>
       )}
     </div>
-    // <div className="ml-0 md:ml-8 mt-4 relative">
 
-    //   {/* Vertical Line */}
-    //   <div className="absolute left-[-12px] top-0 h-full w-px bg-gray-300"></div>
-
-    //   <Paper
-    //     className="p-3 mb-3 rounded-xl shadow-sm hover:shadow-lg transition-all duration-200 cursor-pointer bg-white border border-gray-200"
-    //     sx={{ borderLeft: "4px solid #3b82f6" }}
-    //   >
-    //     <div className="flex items-center gap-3">
-    //       <div className="bg-blue-100 p-2 rounded-full">
-    //         <Person className="text-blue-600" />
-    //       </div>
-
-    //       <div className="flex-1">
-    //         <Typography variant="subtitle1" className="font-semibold text-gray-800">
-    //           {employee.firstName} {employee.lastName}
-    //         </Typography>
-
-    //         <Typography variant="body2" className="text-gray-500">
-    //           {employee.designation?.title}
-    //         </Typography>
-
-    //         <Typography variant="caption" className="text-gray-400">
-    //           {employee.department?.name} • {employee.department?.location}
-    //         </Typography>
-
-    //         <Typography variant="caption" className="text-gray-400">
-    //           ({employee.user.role.toUpperCase()})
-    //         </Typography>
-    //       </div>
-    //     </div>
-    //   </Paper>
-
-    //   {/* Children */}
-    //   {subs.length > 0 && (
-    //     <div className="ml-6 border-l-2 border-dashed border-gray-300 pl-4">
-    //       {subs.map((sub) => (
-    //         <OrgNode key={sub.id} employee={sub} employees={employees} />
-    //       ))}
-    //     </div>
-    //   )}
-    // </div>
   );
 
 };
@@ -139,7 +95,7 @@ export default function OrgStructureDashboard() {
   const [editingItem, setEditingItem] = useState<any>(null);
   const [formData, setFormData] = useState<any>({});
   const [designations, setDesinations] = useState<any[]>([])
- 
+
   const route = useRouter()
   useEffect(() => {
     const role = typeof window !== "undefined" ? localStorage.getItem("role") || "employee" : "employee";
@@ -175,8 +131,8 @@ export default function OrgStructureDashboard() {
     // Filter by department
     if (selectedDept !== "") {
       temp = temp.filter(
-  (e) => Number(e.department?.id) === Number(selectedDept)
-   );
+        (e) => Number(e.department?.id) === Number(selectedDept)
+      );
     }
 
     setFilteredEmployees(temp);
@@ -223,17 +179,32 @@ export default function OrgStructureDashboard() {
     }
   };
 
-const handleDeptChange = (e: SelectChangeEvent) => {
-  const value = e.target.value;
-  setSelectedDept(value === "" ? "" : Number(value));
-};
+  const handleDeptChange = (e: SelectChangeEvent) => {
+    const value = e.target.value;
+    setSelectedDept(value === "" ? "" : Number(value));
+  };
 
   const topManagers = employees.filter((emp) => emp.user.role === "manager");
 
   return (
-    <Box sx={{ p: { xs: 2, md: 4 }, backgroundColor: "#f3f4f6", minHeight: "100vh" }}
+    <Box sx={{
+      p: { xs: 2, md: 4 }, backgroundColor: "#f3f4f6", minHeight: "100vh", overflowX: "hidden",   // 👈 ADD THIS
+      maxWidth: "100%",
+    }}
       className="bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen" >
-      <Typography variant="h4" gutterBottom textAlign="center" className="font-bold mb-6">
+      <Typography
+        variant="h4"
+        gutterBottom
+        textAlign="center"
+        className="font-extrabold mb-6 text-gray-800"
+        sx={{
+          letterSpacing: '1px',            // subtle spacing for elegance
+          lineHeight: 1.3,                  // tighter line height
+          background: 'linear-gradient(90deg, #3b82f6, #60a5fa)', // gradient text
+          WebkitBackgroundClip: 'text',     // gradient clip
+          WebkitTextFillColor: 'transparent',
+        }}
+      >
         Org Structure & Analytics
       </Typography>
 
@@ -246,42 +217,23 @@ const handleDeptChange = (e: SelectChangeEvent) => {
         </Stack>
       )} */}
 
-      {/* Search + Department Filter */}
-      <Stack direction={{ xs: "column", sm: "row" }}
-        spacing={2}
-        mb={5}
-        alignItems="center"
-        justifyContent="center"
-        className="bg-white p-4 rounded-2xl shadow-sm border border-gray-200">
-        <TextField
-          label="Search Employee"
-          variant="outlined"
-          size="small"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-        {/* <FormControl size="small" sx={{ minWidth: 180 }}>
-          <InputLabel>Filter by Department </InputLabel>
-         <Select
-            value={selectedDept === "" ? "" : String(selectedDept)}
-            label="Filter by Department"
-            onChange={handleDeptChange}
-          >
-            <MenuItem value="">All Departments</MenuItem>
-            {departments.map((d) => (
-              <MenuItem key={d.id} value={d.id}>
-                {d.name}
-              </MenuItem>
-            ))}
-         </Select>
-        </FormControl> */}
-      </Stack>
-
       <Stack direction={{ xs: "column", md: "row" }} spacing={3} flexWrap="wrap">
         {/* Departments */}
         <Paper sx={{ p: 3, flex: "1 1 250px" }}
           className="shadow-lg rounded-2xl border border-gray-200 bg-white">
-          <Typography variant="h6" className="font-semibold mb-3 text-center">Departments</Typography>
+          <Typography
+            variant="h6"
+            className="font-extrabold mb-3 text-center text-blue-500"
+            sx={{
+              padding: '20px 0',      // top & bottom padding
+              letterSpacing: '0.5px', // subtle letter spacing
+              textTransform: 'uppercase', // optional uppercase
+              backgroundColor: '#f0f9ff', // optional light blue background
+              borderRadius: '12px',   // rounded edges
+            }}
+          >
+            Departments
+          </Typography>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 text-center">
             {departments.length > 0 ? (
               departments.map((d) => (
@@ -313,15 +265,61 @@ const handleDeptChange = (e: SelectChangeEvent) => {
         </Paper>
       </Stack>
 
-    
       <Paper
         sx={{ p: 3, flex: "1 1 250px" }}
         className="shadow-lg rounded-2xl border border-gray-200 bg-white"
       >
-        <Typography variant="h6" className="font-semibold mb-4 text-center">
+        <Typography
+          variant="h6"
+          className="font-extrabold mb-3 text-center text-blue-500"
+          sx={{
+            padding: '20px 0',      // top & bottom padding
+            letterSpacing: '0.5px', // subtle letter spacing
+            textTransform: 'uppercase', // optional uppercase
+            backgroundColor: '#f0f9ff', // optional light blue background
+            borderRadius: '12px',   // rounded edges
+          }}
+        >
           Employees
         </Typography>
 
+<Stack
+  direction={{ xs: "column", sm: "row" }}
+  spacing={2}
+  mb={5}
+  alignItems="center"
+  justifyContent="center"
+  className="bg-white p-4 rounded-2xl shadow-md border border-gray-200"
+  sx={{
+    maxWidth: 800,          // constrain width for large screens
+    mx: "auto",             // center horizontally
+  }}
+>
+  {/* Search Input */}
+  <TextField
+    label="Search Employee"
+    variant="outlined"
+    size="medium"
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    fullWidth
+    sx={{
+      backgroundColor: "#f9fafb", // subtle light gray background
+      borderRadius: "12px",
+      '& .MuiOutlinedInput-root': {
+        '& fieldset': {
+          borderColor: '#d1d5db', // light border
+        },
+        '&:hover fieldset': {
+          borderColor: '#3b82f6', // blue on hover
+        },
+        '&.Mui-focused fieldset': {
+          borderColor: '#2563eb', // darker blue when focused
+        },
+      },
+    }}
+  />
+</Stack>
         {filteredEmployees.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredEmployees.map((e) => (
@@ -379,36 +377,44 @@ const handleDeptChange = (e: SelectChangeEvent) => {
             ))}
           </div>
         ) : (
-          <Typography  textAlign="center">No employees found</Typography>
+          <Typography textAlign="center">No employees found</Typography>
         )}
       </Paper>
 
       {/* Hierarchy */}
 
       <Paper
-        sx={{ p: 4, mt: 6, overflowX: "auto" }}
+        sx={{ p: 4, mt: 6 }}
         className="shadow-xl rounded-2xl bg-white border border-gray-200"
       >
         <Typography
           variant="h6"
-          textAlign="center"
-          className="font-semibold mb-6 text-gray-700"
+          className="font-extrabold mb-3 text-center text-blue-500"
+          sx={{
+            padding: '20px 0',      // top & bottom padding
+            letterSpacing: '0.5px', // subtle letter spacing
+            textTransform: 'uppercase', // optional uppercase
+            backgroundColor: '#f0f9ff', // optional light blue background
+            borderRadius: '12px',   // rounded edges
+          }}
         >
-          Organization Hierarchy
+          Organisation Hierachy
         </Typography>
-
-        <div className="flex justify-center">
-          {topManagers.length > 0 ? (
-            topManagers.map((manager) => (
-              <OrgNode
-                key={manager.id}
-                employee={manager}
-                employees={employees}
-              />
-            ))
-          ) : (
-            <Typography textAlign="center">No managers found</Typography>
-          )}
+        {/* Scrollable Container */}
+        <div className="overflow-x-auto w-full">
+          <div className="flex justify-center min-w-[800px]">
+            {topManagers.length > 0 ? (
+              topManagers.map((manager) => (
+                <OrgNode
+                  key={manager.id}
+                  employee={manager}
+                  employees={employees}
+                />
+              ))
+            ) : (
+              <Typography textAlign="center">No managers found</Typography>
+            )}
+          </div>
         </div>
       </Paper>
       {/* Employee Modal */}

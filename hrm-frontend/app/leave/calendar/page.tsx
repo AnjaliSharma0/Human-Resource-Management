@@ -9,6 +9,7 @@ import { leaveApi } from "@/app/src/services/leave";
 import LeaveTable from "@/app/components/leave/LeaveTable";
 import toast from "react-hot-toast";
 import { CheckCircle, Trash2 } from "lucide-react";
+import EmployeeHolidayPage from "@/app/components/leave/HolidayPage";
 
 interface Event {
   id: string | number;
@@ -256,6 +257,8 @@ export default function LeaveCalendarPage() {
           />
         </div>
       )} */}
+
+      <EmployeeHolidayPage/>
     </div>
   );
 }

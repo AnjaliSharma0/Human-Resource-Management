@@ -28,7 +28,7 @@ export default function AssignSalaryGradePage() {
   const [grades, setGrades] = useState<SalaryGrade[]>([]);
   const [selectedGrades, setSelectedGrades] = useState<{ [key: number]: number }>({});
   const [loading, setLoading] = useState(true);
-
+  const [errors, setErrors] = useState<{ [key: number]: boolean }>({});
   // 🚀 Load data
   useEffect(() => {
     Promise.all([
@@ -46,10 +46,16 @@ export default function AssignSalaryGradePage() {
   // 🎯 Handle assign
   const assignGrade = async (empId: number) => {
     const gradeId = selectedGrades[empId];
+ if (!gradeId) {
+    // ❌ set error
+    setErrors(prev => ({ ...prev, [empId]: true }));
 
-    if (!gradeId) {
-      return toast.error("Please select a salary grade");
-    }
+    // 🎯 focus the select
+    const el = document.getElementById(`grade-${empId}`);
+    el?.focus();
+
+    return;
+  }
 
     try {
       await api.patch(`/employees/${empId}/salary-grade`, {
@@ -68,6 +74,7 @@ export default function AssignSalaryGradePage() {
             : emp
         )
       );
+      setErrors(prev => ({ ...prev, [empId]: false }));
     } catch (err) {
       toast.error("Failed to assign grade");
     }
@@ -113,7 +120,7 @@ export default function AssignSalaryGradePage() {
 
                 {/* 🎯 Dropdown */}
                 <td className="p-3">
-                  <select
+                  {/* <select
                     className="border p-2 rounded w-full"
                     onChange={(e) =>
                       setSelectedGrades(prev => ({
@@ -129,7 +136,32 @@ export default function AssignSalaryGradePage() {
                         Basic: ₹{g.basic} | HRA: ₹{g.hra}
                       </option>
                     ))}
-                  </select>
+                  </select> */}
+                  <select
+  id={`grade-${emp.id}`} // ✅ important for focus
+  className={`border p-2 rounded w-full focus:outline-none focus:ring-2 ${
+    errors[emp.id]
+      ? "border-red-500 focus:ring-red-500"
+      : "border-gray-300 focus:ring-blue-500"
+  }`}
+  onChange={(e) => {
+    setSelectedGrades(prev => ({
+      ...prev,
+      [emp.id]: Number(e.target.value),
+    }));
+
+    // ✅ remove red error when user selects
+    setErrors(prev => ({ ...prev, [emp.id]: false }));
+  }}
+  defaultValue=""
+>
+  <option value="">Select Grade</option>
+  {grades.map(g => (
+    <option key={g.id} value={g.id}>
+      Basic: ₹{g.basic} | HRA: ₹{g.hra}
+    </option>
+  ))}
+</select>
                 </td>
 
                 {/* 🚀 Assign */}

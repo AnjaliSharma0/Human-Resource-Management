@@ -1,106 +1,114 @@
-// // "use client";
-// // import { useState } from "react";
-// // import api from "@/app/src/services/api";
-// // import toast from "react-hot-toast";
-
-// // export default function ApplyJob({ jobId }: { jobId: number }) {
-// //   const [form, setForm] = useState({
-// //     firstName: "",
-// //     lastName: "",
-// //     email: "",
-// //     phone: "",
-// //     resume: null as File | null,
-// //   });
-
-// //   const handleSubmit = async () => {
-// //     const data = new FormData();
-// //     data.append("firstName", form.firstName);
-// //     data.append("lastName", form.lastName);
-// //     data.append("email", form.email);
-// //     data.append("phone", form.phone);
-// //     if (form.resume) data.append("resume", form.resume);
-
-// //     try {
-// //       await api.post(`/candidates/apply/${jobId}`, data, {
-// //         headers: { "Content-Type": "multipart/form-data" },
-// //       });
-// //       toast.success("Applied successfully!");
-// //       setForm({ firstName: "", lastName: "", email: "", phone: "", resume: null });
-// //     } catch (err) {
-// //       toast.error("Application failed");
-// //     }
-// //   };
-
-// //   return (
-// //     <div className="p-4 mt-4 border rounded">
-// //       <h2 className="text-xl font-semibold mb-2">Apply for Job</h2>
-// //       <input placeholder="First Name" value={form.firstName} onChange={e => setForm({ ...form, firstName: e.target.value })} className="border p-1 m-1"/>
-// //       <input placeholder="Last Name" value={form.lastName} onChange={e => setForm({ ...form, lastName: e.target.value })} className="border p-1 m-1"/>
-// //       <input placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} className="border p-1 m-1"/>
-// //       <input placeholder="Phone" value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} className="border p-1 m-1"/>
-// //       <input type="file" onChange={e => setForm({ ...form, resume: e.target.files?.[0] || null })} className="border p-1 m-1"/>
-// //       <button onClick={handleSubmit} className="bg-green-500 text-white p-2 rounded mt-2">Submit</button>
-// //     </div>
-// //   );
-// // }
 
 // "use client";
 // import { useState } from "react";
 // import api from "@/app/src/services/api";
 // import toast from "react-hot-toast";
 
-// export default function ApplyJob({ jobId }: { jobId: number }) {
-//   const [form, setForm] = useState({
-//     resume: null as File | null,
-//   });
+// interface ApplyJobProps {
+//   jobId: number;
+// }
+
+// export default function ApplyJob({ jobId }: ApplyJobProps) {
+//   const [resumeFile, setResumeFile] = useState<File | null>(null);
+//   const [errors, setError]= useState<any>({})
+ 
+
+//     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     const file = e.target.files?.[0];
+
+//     if (!file) {
+//       setResumeFile(null);
+//       setError("Resume is required");
+//       return;
+//     }
+
+//     const allowedTypes = [
+//       "application/pdf",
+//       "application/msword",
+//       "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+//     ];
+
+//     if (!allowedTypes.includes(file.type)) {
+//       setError("Only PDF or DOC/DOCX files are allowed");
+//       setResumeFile(null);
+//       return;
+//     }
+
+//     // Optional: file size validation (e.g., 2MB)
+//     const maxSize = 2 * 1024 * 1024;
+//     if (file.size > maxSize) {
+//       setError("File size must be less than 2MB");
+//       setResumeFile(null);
+//       return;
+//     }
+
+//     setResumeFile(file);
+//     setError("");
+//   };
+
 
 //   const handleSubmit = async () => {
-//     if (!form.resume) return toast.error("Please select a resume file");
+//     if (!resumeFile) return toast.error("Please select a resume file");
 
-//     const data = new FormData();
-//     data.append("resume", form.resume);
-//     data.append("jobPostingId", jobId.toString()); // ✅ Required for backend
-
+//     const formData = new FormData();
+//     formData.append("resume", resumeFile);
+//     formData.append("jobPostingId", jobId.toString()); // ✅ Required for backend
 
 //     try {
-//       await api.post(`/candidates/apply/${jobId}`, data, {
+//       await api.post("/candidates/apply", formData, {
 //         headers: { "Content-Type": "multipart/form-data" },
 //       });
 //       toast.success("Applied successfully!");
-//       setForm({ resume: null });
-//     } catch (err) {
-//       toast.error("Application failed");
+//       setResumeFile(null);
+//     } catch (err: any) {
+//       console.log("Error applying:", err);
+//       toast.error(err?.response?.data?.message || "Application failed");
 //     }
 //   };
 
 //   return (
-//     <div className="p-4 mt-4 border rounded max-w-md mx-auto">
+//     <div className="p-4 mt-4 border rounded max-w-md mx-auto bg-white shadow">
 //       <h2 className="text-xl font-semibold mb-4">Apply for Job</h2>
 
 //       <label className="block mb-2 font-medium">Upload Resume (PDF/DOC)</label>
 //       <input
 //         type="file"
 //         accept=".pdf,.doc,.docx"
-//         onChange={e => setForm({ resume: e.target.files?.[0] || null })}
+//         onChange={handleFileChange}
 //         className="border p-2 w-full mb-4"
+//         required
 //       />
 
-//       {form.resume && (
+//       {resumeFile && (
 //         <p className="mb-4 text-gray-700">
-//           Selected file: <span className="font-semibold">{form.resume.name}</span>
+//           Selected file: <span className="font-semibold">{resumeFile.name}</span>
 //         </p>
 //       )}
 
+//        {/* Error Message */}
+//       {errors && (
+//         <p className="text-red-500 text-sm mb-3">{errors}</p>
+//       )}
+//        {resumeFile && !errors && (
+//         <p className="mb-3 text-gray-700">
+//           Selected file:{" "}
+//           <span className="font-semibold">{resumeFile.name}</span>
+//         </p>
+//       )}
 //       <button
 //         onClick={handleSubmit}
-//         className="bg-green-500 text-white p-2 rounded w-full"
+//         disabled={!resumeFile}
+//         className={`p-2 rounded w-full text-white ${
+//           resumeFile
+//             ? "bg-green-500 hover:bg-green-600"
+//             : "bg-gray-400 cursor-not-allowed"
+//         }`}
 //       >
-//         Submit
+//         Submit Application
 //       </button>
 //     </div>
 //   );
 // }
-
 
 "use client";
 import { useState } from "react";
@@ -112,21 +120,23 @@ interface ApplyJobProps {
 }
 
 export default function ApplyJob({ jobId }: ApplyJobProps) {
-  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [resumeUrl, setResumeUrl] = useState("");
+  const [error, setError] = useState("");
 
   const handleSubmit = async () => {
-    if (!resumeFile) return toast.error("Please select a resume file");
-
-    const formData = new FormData();
-    formData.append("resume", resumeFile);
-    formData.append("jobPostingId", jobId.toString()); // ✅ Required for backend
+    if (!resumeUrl) {
+      setError("Resume URL is required");
+      return;
+    }
 
     try {
-      await api.post("/candidates/apply", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
+      await api.post("/candidates/apply", {
+        resumeUrl,
+        jobPostingId: jobId,
       });
       toast.success("Applied successfully!");
-      setResumeFile(null);
+      setResumeUrl("");
+      setError("");
     } catch (err: any) {
       console.log("Error applying:", err);
       toast.error(err?.response?.data?.message || "Application failed");
@@ -137,23 +147,23 @@ export default function ApplyJob({ jobId }: ApplyJobProps) {
     <div className="p-4 mt-4 border rounded max-w-md mx-auto bg-white shadow">
       <h2 className="text-xl font-semibold mb-4">Apply for Job</h2>
 
-      <label className="block mb-2 font-medium">Upload Resume (PDF/DOC)</label>
+      <label className="block mb-2 font-medium">Resume URL (OneDrive, Google Drive, etc.)</label>
       <input
-        type="file"
-        accept=".pdf,.doc,.docx"
-        onChange={(e) => setResumeFile(e.target.files?.[0] || null)}
+        type="url"
+        placeholder="Paste your resume URL here"
+        value={resumeUrl}
+        onChange={(e) => setResumeUrl(e.target.value)}
         className="border p-2 w-full mb-4"
+        required
       />
 
-      {resumeFile && (
-        <p className="mb-4 text-gray-700">
-          Selected file: <span className="font-semibold">{resumeFile.name}</span>
-        </p>
-      )}
+      {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
 
       <button
         onClick={handleSubmit}
-        className="bg-green-500 text-white p-2 rounded w-full hover:bg-green-600"
+        className={`p-2 rounded w-full text-white ${
+          resumeUrl ? "bg-green-500 hover:bg-green-600" : "bg-gray-400 cursor-not-allowed"
+        }`}
       >
         Submit Application
       </button>

@@ -120,6 +120,7 @@ const filteredHolidays = holidays
           value={form.name}
           onChange={handleChange}
           className="border p-2 rounded w-48"
+          required
         />
 
         <input
@@ -128,6 +129,7 @@ const filteredHolidays = holidays
           value={form.date}
           onChange={handleChange}
           className="border p-2 rounded"
+          required
         />
 
         <button

@@ -81,6 +81,7 @@ export default function AdminDashboard() {
       ]);
 
       setJobRequisitions(reqs.data || []);
+      console.log("job req",reqs.data)
       setJobPostings(postings.data || []);
       setCandidates(cands.data || []);
       setInterviews(ints.data || []);
@@ -91,6 +92,7 @@ export default function AdminDashboard() {
       console.error("Error loading dashboard:", err);
     }
   };
+  
 
   useEffect(() => {
     loadData();
@@ -109,6 +111,7 @@ export default function AdminDashboard() {
     { name: "Rejected", value: leaves.filter((l) => l.status?.toLowerCase() === "rejected").length },
   ];
 
+ 
   return (
     <div className="p-4 sm:p-6 md:p-8 space-y-8">
       <h1 className="text-2xl sm:text-3xl font-bold">Admin Dashboard</h1>
@@ -157,11 +160,11 @@ export default function AdminDashboard() {
         <LeaveTable
           leaves={leaves}
           employees={employees}
-          showActions
-          onAction={async (id, status) => {
-            await api.put(`/leave/${id}/status`, { status });
-            loadData();
-          }}
+          // showActions
+          // onAction={async (id, status) => {
+          //   await api.put(`/leave/${id}/status`, { status });
+          //   loadData();
+          // }}
         />
       </div>
 
@@ -207,7 +210,7 @@ export default function AdminDashboard() {
                   <div key={job.id} className="bg-gray-50 p-4 rounded shadow hover:shadow-md transition">
                     <h3 className="font-semibold text-lg">{job.jobRequisition?.title}</h3>
                     <p className="text-sm text-gray-500">
-                      Department: {job.jobRequisition?.department?.name || "N/A"}
+                      Department: {job.jobRequisition?.department || "N/A"}
                     </p>
                     <p className="text-sm mt-2">
                       Posting Date: {new Date(job.postingStartDate).toLocaleDateString()}

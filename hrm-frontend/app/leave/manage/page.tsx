@@ -266,7 +266,29 @@ export default function LeaveCalendarPage() {
       {/* Applications */}
       {tab === "applications" && (
         <div className="overflow-x-auto">
-          <LeaveTable leaves={leaves} />
+          {tab === "applications" && (
+  <div className="overflow-x-auto">
+    <LeaveTable
+      leaves={leaves}
+      showActions={true}
+      onAction={async (id, status) => {
+        try {
+          setActionLoading(true);
+
+          await leaveApi.updateLeaveStatus(id, status);
+
+          toast.success(`Leave ${status}`);
+          fetchLeaves();
+          fetchEvents();
+        } catch {
+          toast.error(`Failed to ${status} leave`);
+        } finally {
+          setActionLoading(false);
+        }
+      }}
+    />
+  </div>
+)}
         </div>
       )}
 

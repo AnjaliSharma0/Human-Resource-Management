@@ -1,8 +1,10 @@
-import { Controller, Post, Body, Param, Get, Patch, UseGuards, Req, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Body, Param, Get, Patch, UseGuards, Req, UseInterceptors, UploadedFile, BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { CandidateService } from './candidate-service';
 import { CandidateStatus } from './entity/candidate.entity';
 import { AuthGuard } from '@nestjs/passport';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ApplyCandidateDto } from './dto/apply-candidate.dto';
+import { JwtAuthGuard } from 'src/dto/auth/jwt-auth.guard';
 
 
 // @UseGuards(RolesGaurd)
@@ -11,20 +13,21 @@ export class CandidateController {
   constructor(private service: CandidateService) {}
 
   
-@Post("apply")
-@UseGuards(AuthGuard("jwt"))
-@UseInterceptors(FileInterceptor("resume", { dest: './uploads/' }))
-apply(
-  @Body("jobPostingId") jobPostingId: number,
-  @UploadedFile() file: Express.Multer.File,
-  @Req() req
+@Post('apply')
+@UseGuards(JwtAuthGuard) // or whatever auth guard you have
+async applyCandidate(
+  @Body() dto: ApplyCandidateDto,
+  @Req() req: any, // or Request type
 ) {
-  if (!file) {
-    throw new BadRequestException("Resume file is required");
-  }
-  return this.service.apply(jobPostingId, file, req.user.id);
-}
+  const user = req.user; 
+  if (!user) throw new UnauthorizedException("User not logged in");
 
+  return this.service.apply(
+    dto.jobPostingId,
+    user.id,
+    dto
+  );
+}
   @Get()
   //@Roles('Admin')
   findAll() {

@@ -43,7 +43,7 @@ export default function EmployeeDashboard() {
   const [activeTab, setActiveTab] =
     useState<Tab>("Department Employees");
   const [applyJobId, setApplyJobId] = useState<number | null>(null);
-  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [resumeUrl, setResumeUrl] = useState<string>("");
 
   const router = useRouter();
 
@@ -88,35 +88,49 @@ export default function EmployeeDashboard() {
   }, []);
 
   // -------------------- Apply Job --------------------
+  
   const handleApplyJob = async () => {
-    if (!applyJobId || !resumeFile) return;
+  if (!applyJobId || !resumeUrl.trim()) {
+    toast.error("Please provide a resume URL");
+    return;
+  }
 
-    const formData = new FormData();
-    formData.append("jobPostingId", applyJobId.toString());
-    formData.append("resume", resumeFile);
-
-    try {
-      await api.post("/candidates/apply", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      toast.success("Application submitted successfully ✅");
-      setApplyJobId(null);
-      setResumeFile(null);
-      loadData();
-    } catch (err) {
-      console.error(err);
-    }
-  };
-const handleUpdateOfferStatus = async (offerId: number, status: "accepted" | "rejected") => {
   try {
-    await api.patch(`/offer-letters/${offerId}`, { status });
-    toast.success(`Offer ${status} successfully ✅`);
-    loadData(); // refresh table
-  } catch (err) {
+    // fetch employee info
+    const userRes = await api.get("/employees/me");
+    console.log("useres",userRes.data)
+    const { firstName, lastName, email, phone } = userRes.data;
+
+    await api.post("/candidates/apply", {
+      jobPostingId: applyJobId,
+      resumeUrl: resumeUrl.trim(),
+      firstName,
+      lastName,
+      email,
+      phone,
+    });
+
+    toast.success("Application submitted successfully ✅");
+    setApplyJobId(null);
+    setResumeUrl("");
+    loadData(); // refresh tables
+  } catch (err: any) {
     console.error(err);
-    toast.error("Failed to update offer status ❌");
+    toast.error(err?.response?.data?.message || "Failed to submit application ❌");
   }
 };
+
+
+  const handleUpdateOfferStatus = async (offerId: number, status: "accepted" | "rejected") => {
+    try {
+      await api.patch(`/offer-letters/${offerId}`, { status });
+      toast.success(`Offer ${status} successfully ✅`);
+      loadData(); // refresh table
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to update offer status ❌");
+    }
+  };
   const hasApplied = (jobId: number) =>
     myApplications.some((app) => app?.appliedFor?.id === jobId);
 
@@ -364,80 +378,77 @@ const handleUpdateOfferStatus = async (offerId: number, status: "accepted" | "re
       )}
 
       {/* Offer Letters */}
-{activeTab === "Offer Letters" && (
-  <div className="overflow-x-auto">
-    {offerLetters.length === 0 ? (
-      <div className="p-4 text-center text-gray-500">
-        No offer letters are available.
-      </div>
-    ) : (
-      <table className="min-w-[600px] w-full text-sm border">
-        <thead className="bg-gray-200">
-          <tr>
-            <th className="p-2">Job</th>
-            <th className="p-2">File</th>
-            <th className="p-2">Status</th>
-            <th className="p-2">Action</th>
-          </tr>
-        </thead>
-       <tbody>
-  {offerLetters.map((o) => (
-    <tr key={o.id}>
-      <td>{o?.candidate?.jobPosting?.jobRequisition?.title || "-"}</td>
-      <td>
-        {o.offerFileUrl ? (
-          <a href={o.offerFileUrl} target="_blank" className="text-blue-500 underline">
-            Download
-          </a>
-        ) : "-"}
-      </td>
-      <td>
-        <span
-          className={`px-2 py-1 rounded-full text-xs font-medium ${
-            o.status === "selected"
-              ? "bg-green-100 text-green-700"
-              : o.status === "rejected"
-              ? "bg-red-100 text-red-600"
-              : "bg-yellow-100 text-yellow-700"
-          }`}
-        >
-          {o.status}
-        </span>
-      </td>
-      <td>
-        {o.status === "sent" ? (
-          <div className="flex gap-2">
-            <button
-              onClick={() => handleUpdateOfferStatus(o.id, "accepted")}
-              className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
-            >
-              Accept
-            </button>
-            <button
-              onClick={() => handleUpdateOfferStatus(o.id, "rejected")}
-              className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
-            >
-              Reject
-            </button>
-          </div>
-        ) : (
-          <div>No action</div>
-        )}
-      </td>
-    </tr>
-  ))}
-</tbody>
-      </table>
-    )}
-  </div>
-)}
-    
+      {activeTab === "Offer Letters" && (
+        <div className="overflow-x-auto">
+          {offerLetters.length === 0 ? (
+            <div className="p-4 text-center text-gray-500">
+              No offer letters are available.
+            </div>
+          ) : (
+            <table className="min-w-[600px] w-full text-sm border">
+              <thead className="bg-gray-200">
+                <tr>
+                  <th className="p-2">Job</th>
+                  <th className="p-2">File</th>
+                  <th className="p-2">Status</th>
+                  <th className="p-2">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {offerLetters.map((o) => (
+                  <tr key={o.id}>
+                    <td>{o?.candidate?.jobPosting?.jobRequisition?.title || "-"}</td>
+                    <td>
+                      {o.offerFileUrl ? (
+                        <a href={o.offerFileUrl} target="_blank" className="text-blue-500 underline">
+                          Download
+                        </a>
+                      ) : "-"}
+                    </td>
+                    <td>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${o.status === "selected"
+                            ? "bg-green-100 text-green-700"
+                            : o.status === "rejected"
+                              ? "bg-red-100 text-red-600"
+                              : "bg-yellow-100 text-yellow-700"
+                          }`}
+                      >
+                        {o.status}
+                      </span>
+                    </td>
+                    <td>
+                      {o.status === "sent" ? (
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleUpdateOfferStatus(o.id, "accepted")}
+                            className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                          >
+                            Accept
+                          </button>
+                          <button
+                            onClick={() => handleUpdateOfferStatus(o.id, "rejected")}
+                            className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      ) : (
+                        <div>No action</div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      )}
+
       <Dialog
         open={!!applyJobId}
         onClose={() => setApplyJobId(null)}
-        PaperProps={{
-          className: "rounded-2xl p-2"
-        }}
+        PaperProps={{ className: "rounded-2xl p-2" }}
       >
         <DialogTitle className="font-semibold text-gray-800">
           Apply for Job
@@ -446,13 +457,11 @@ const handleUpdateOfferStatus = async (offerId: number, status: "accepted" | "re
         <DialogContent>
           <TextField
             fullWidth
-            type="file"
-            inputProps={{ accept: ".pdf,.doc,.docx" }}
+            type="url"
+            placeholder="Paste your resume URL here (OneDrive, Google Drive, etc.)"
+            value={resumeUrl}
+            onChange={(e) => setResumeUrl(e.target.value)}
             className="mt-2"
-            onChange={(e) => {
-              const target = e.target as HTMLInputElement;
-              setResumeFile(target.files ? target.files[0] : null);
-            }}
           />
         </DialogContent>
 

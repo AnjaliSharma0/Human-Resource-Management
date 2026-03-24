@@ -79,14 +79,14 @@ export default function DocumentsTab({ employeeId }: any) {
                                     >
                                         View
                                     </a> */}
-                                    <a
+                                    {/* <a
                                         href={`${process.env.NEXT_PUBLIC_API_URL}/${doc.filePath.replace(/\\/g, "/")}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         className="text-blue-500 underline"
                                         >
                                         View
-                                        </a>
+                                        </a> */}
                                     <button
                                         onClick={() => deleteDoc(doc.id)}
                                         className="text-red-500"

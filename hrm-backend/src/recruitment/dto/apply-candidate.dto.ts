@@ -1,4 +1,4 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class ApplyCandidateDto {
@@ -18,8 +18,10 @@ export class ApplyCandidateDto {
   @IsNotEmpty()
   phone: string;
 
-  // Resume will be handled as file upload (multipart/form-data)
-  @IsOptional()
-  @Type(() => Object)
-  resume?: any;
+ @IsNotEmpty()
+  @IsString()
+  resumeUrl: string; // OneDrive/Google Drive URL
+
+  @IsNumber()
+  jobPostingId: number; // number
 }

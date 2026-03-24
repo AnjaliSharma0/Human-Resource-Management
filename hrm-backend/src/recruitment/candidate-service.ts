@@ -18,20 +18,16 @@ export class CandidateService {
   ) {}
 
 
-  async apply(jobPostingId: number, file: Express.Multer.File, userId: number) {
+ async apply(jobPostingId: number, userId: number, dto: ApplyCandidateDto) {
+  const posting = await this.postingRepo.findOne({ where: { id: jobPostingId } });
+  if (!posting) throw new NotFoundException("Job Posting not found");
 
-  const posting = await this.postingRepo.findOne({
-    where: { id: jobPostingId }
-  });
-
-  if (!posting) {
-    throw new NotFoundException("Job Posting not found");
-  }
+  if (!dto.resumeUrl) throw new NotFoundException("Resume URL is required");
 
   const candidate = this.repo.create({
-    employee: { id: userId } as any,   // ✅ LINK EMPLOYEE
+    employee: { id: userId } as any,
     appliedFor: posting,
-    resumeUrl: file.filename,
+    resumeUrl: dto.resumeUrl, // store OneDrive URL
     status: CandidateStatus.APPLIED
   });
 
