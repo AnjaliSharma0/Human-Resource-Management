@@ -231,15 +231,15 @@ export default function AdminDashboard() {
           {activeTab === "Candidates" && <AdminCandidates />}
 
           {activeTab === "Interviews" && (
-            <div className="space-y-2">
+            <div className="space-y-2 flex flex-cols-2">
               {interviews.length > 0 ? (
                 interviews.map((item) => (
-                  <div key={item.id} className="bg-gray-50 p-4 rounded shadow hover:shadow-md transition flex flex-col gap-1">
-                    <p><span className="font-semibold">CandidateID:</span> {item.id || "N/A"}</p>
-                    <p><span className="font-semibold">Interviewer:</span> {item.interviewer?.firstName} {item.interviewer?.lastName}</p>
-                    <p><span className="font-semibold">Date & Time:</span> {new Date(item.dateTime).toLocaleString()}</p>
-                    <p><span className="font-semibold">Mode:</span> {item.mode}</p>
-                    <p><span className="font-semibold">Status:</span> {item.status}</p>
+                  <div key={item.id} className="bg-gray-100 p-4 m-3 rounded shadow-full hover:shadow-full transition flex flex-col gap-2 hover:bg-blue-100">
+                    <p><span className="font-semibold text-blue-700">CandidateID:</span> {item.id || "N/A"}</p>
+                    <p><span className="font-semibold ">Interviewer:</span> {item.interviewer?.firstName} {item.interviewer?.lastName}</p>
+                    <p><span className="font-semibold text-green-600">Date & Time:</span> {new Date(item.dateTime).toLocaleString()}</p>
+                    <p><span className="font-semibold text-blue-500">Mode:</span> {item.mode}</p>
+                    <p><span className="font-semibold text-blue-600">Status:</span> {item.status}</p>
                   </div>
                 ))
               ) : (
@@ -253,10 +253,10 @@ export default function AdminDashboard() {
               {offerLetters.length > 0 ? (
                 offerLetters.map((offer) => (
                   <div key={offer.id} className="bg-gray-50 p-4 rounded shadow flex justify-between items-center">
-                    <div>
-                      <p><span className="font-semibold">CandidateId:</span> {offer.candidate.id}</p>
-                      <p><span className="font-semibold">Status:</span> {offer.status}</p>
-                      <p><span className="font-semibold">Sent At:</span> {new Date(offer.sentAt).toLocaleDateString()}</p>
+                    <div >
+                      <p className="bg-blue-500 p-2 rounded-full text-white"><span className="font-semibold">CandidateId:</span> {offer.candidate.id}</p>
+                      <p className=""><span className="font-semibold text-blue-600 p-3">Status:</span> <strong>{offer.status}</strong> </p>
+                      <p className="p-2 text-green-700"><span className="font-semibold">Sent At:</span> {new Date(offer.sentAt).toLocaleDateString()}</p>
                     </div>
                     {offer.offerFileUrl && (
                       <div className="flex gap-2">

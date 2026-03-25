@@ -76,6 +76,7 @@ export default function EmployeeDashboard() {
       setMyApplications(appsRes.data);
       setInterviews(interviewsRes.data);
       setOfferLetters(offersRes.data);
+      console.log("Offer letter", offersRes.data)
     } catch (err) {
       console.error(err);
     } finally {
@@ -121,13 +122,13 @@ export default function EmployeeDashboard() {
 };
 
 
-  const handleUpdateOfferStatus = async (offerId: number, status: "accepted" | "rejected") => {
+  const handleUpdateOfferStatus = async (offerId: number, status: "Accepted" | "Rejected") => {
     try {
-      await api.patch(`/offer-letters/${offerId}`, { status });
+      await api.patch(`/offer-letters/${offerId}/status`, { status });
       toast.success(`Offer ${status} successfully ✅`);
       loadData(); // refresh table
-    } catch (err) {
-      console.error(err);
+    } catch (err:any) {
+      console.error(err.message);
       toast.error("Failed to update offer status ❌");
     }
   };
@@ -379,68 +380,121 @@ export default function EmployeeDashboard() {
 
       {/* Offer Letters */}
       {activeTab === "Offer Letters" && (
-        <div className="overflow-x-auto">
+        <div className="">
           {offerLetters.length === 0 ? (
             <div className="p-4 text-center text-gray-500">
               No offer letters are available.
             </div>
           ) : (
-            <table className="min-w-[600px] w-full text-sm border">
-              <thead className="bg-gray-200">
-                <tr>
-                  <th className="p-2">Job</th>
-                  <th className="p-2">File</th>
-                  <th className="p-2">Status</th>
-                  <th className="p-2">Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {offerLetters.map((o) => (
-                  <tr key={o.id}>
-                    <td>{o?.candidate?.jobPosting?.jobRequisition?.title || "-"}</td>
-                    <td>
-                      {o.offerFileUrl ? (
-                        <a href={o.offerFileUrl} target="_blank" className="text-blue-500 underline">
-                          Download
-                        </a>
-                      ) : "-"}
-                    </td>
-                    <td>
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs font-medium ${o.status === "selected"
-                            ? "bg-green-100 text-green-700"
-                            : o.status === "rejected"
-                              ? "bg-red-100 text-red-600"
-                              : "bg-yellow-100 text-yellow-700"
-                          }`}
-                      >
-                        {o.status}
-                      </span>
-                    </td>
-                    <td>
-                      {o.status === "sent" ? (
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleUpdateOfferStatus(o.id, "accepted")}
-                            className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
-                          >
-                            Accept
-                          </button>
-                          <button
-                            onClick={() => handleUpdateOfferStatus(o.id, "rejected")}
-                            className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
-                          >
-                            Reject
-                          </button>
-                        </div>
-                      ) : (
-                        <div>No action</div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            // <table className="min-w-[600px] w-full text-sm border">
+            //   <thead className="bg-gray-200">
+            //     <tr>
+            //       {/* <th className="p-2">Job</th> */}
+            //       <th className="p-2">File</th>
+            //       <th className="p-2">Status</th>
+            //       <th className="p-2">Action</th>
+            //     </tr>
+            //   </thead>
+            //   <tbody>
+            //     {offerLetters.map((o) => (
+            //       <tr key={o.id}>
+                 
+            //         {/* <td>
+            //           {o.offerFileUrl ? (
+            //             <a href={o.offerFileUrl} target="_blank" className="text-blue-500 underline">
+            //               Download
+            //             </a>
+            //           ) : "-"}
+            //         </td> */}
+            //         <td>
+            //           <span
+            //             className={`px-2 py-1 rounded-full text-xs font-medium ${o.status === "selected"
+            //                 ? "bg-green-100 text-green-700"
+            //                 : o.status === "rejected"
+            //                   ? "bg-red-100 text-red-600"
+            //                   : "bg-yellow-100 text-yellow-700"
+            //               }`}
+            //           >
+            //             {o.status}
+            //           </span>
+            //         </td>
+            //         <td>
+            //           {o.status === "Sent" ? (
+            //             <div className="flex gap-2">
+            //               <button
+            //                 onClick={() => handleUpdateOfferStatus(o.id, "accepted")}
+            //                 className="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+            //               >
+            //                 Accept
+            //               </button>
+            //               <button
+            //                 onClick={() => handleUpdateOfferStatus(o.id, "rejected")}
+            //                 className="px-2 py-1 bg-red-600 text-white text-xs rounded hover:bg-red-700"
+            //               >
+            //                 Reject
+            //               </button>
+            //             </div>
+            //           ) : (
+            //             <div>No action</div>
+            //           )}
+            //         </td>
+            //       </tr>
+            //     ))}
+            //   </tbody>
+            // </table>
+            <table className="min-w-[600px] w-full text-sm border-collapse border border-gray-200 shadow-sm rounded-lg overflow-hidden">
+  <thead className="bg-gray-100">
+    <tr>
+      <th className="p-3 text-left text-gray-700 uppercase text-xs font-semibold">Status</th>
+      <th className="p-3 text-left text-gray-700 uppercase text-xs font-semibold">Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {offerLetters.map((o) => (
+      <tr
+        key={o.id}
+        className="border-b last:border-b-0 hover:bg-gray-50 transition-colors"
+      >
+        {/* Status Badge */}
+        <td className="p-3">
+          <span
+            className={`px-3 py-1 rounded-full text-xs font-semibold ${
+              o.status.toLowerCase() === "selected"
+                ? "bg-green-100 text-green-700"
+                : o.status.toLowerCase() === "rejected"
+                ? "bg-red-100 text-red-600"
+                : "bg-yellow-100 text-yellow-700"
+            }`}
+          >
+            {o.status}
+          </span>
+        </td>
+
+        {/* Action Buttons */}
+        <td className="p-3">
+          {o.status.toLowerCase() === "sent" ? (
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleUpdateOfferStatus(o.id, "Accepted")}
+                className="px-3 py-1 bg-green-600 text-white text-xs rounded-full hover:bg-green-700 transition-colors"
+              >
+                Accept
+              </button>
+              <button
+                onClick={() => handleUpdateOfferStatus(o.id, "Rejected")}
+                className="px-3 py-1 bg-red-600 text-white text-xs rounded-full hover:bg-red-700 transition-colors"
+              >
+                Reject
+              </button>
+            </div>
+          ) : (
+            <span className="text-gray-500 text-xs">No action</span>
+          )}
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
           )}
         </div>
       )}

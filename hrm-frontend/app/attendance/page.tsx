@@ -236,7 +236,7 @@ export default function AttendanceDashboard() {
           <div className="flex flex-wrap gap-4">
             {currentlyPunchedIn.map((a) => (
               <span key={a.id} className="px-3 py-1 bg-blue-200 text-blue-800 rounded-full font-medium text-sm">
-                {a.employee.firstName} (ID: {a.employee.id})
+                {a.employee.firstName} (ID: {a.id})
               </span>
             ))}
           </div>
@@ -245,7 +245,7 @@ export default function AttendanceDashboard() {
       {role !== "admin" && attendance && (
         <div className="bg-green-50 p-6 rounded-xl shadow">
           <h2 className="text-xl font-semibold mb-2">Today's Attendance</h2>
-          <p><strong>Employee ID:</strong> {userId}</p>
+          <p><strong>Employee ID:</strong> {attendance.employee.id}</p>
           <p><strong>Name:</strong> {attendance.employee.firstName || "You"}</p>
           <p>Date: {new Date(attendance.date).toDateString()}</p>
 
@@ -277,7 +277,7 @@ export default function AttendanceDashboard() {
             </h3>
 
             <p className="text-sm text-gray-500">
-              ID: {userId || (role !== "admin" ? userId : "-")}
+              ID: {a.employee.id || (role !== "admin" ? userId : "-")}
             </p>
             <p className="text-sm text-gray-500">{new Date(a.date).toDateString()}</p>
             <p className="font-medium mt-2">Total Logged: {getTotalLoggedTime(a.sessions)}</p>
